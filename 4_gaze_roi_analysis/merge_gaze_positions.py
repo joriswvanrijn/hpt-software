@@ -1,0 +1,160 @@
+import __constants
+import pandas as pd
+import numpy as np 
+
+def merge_gaze_positions(participant_id, progress, task):
+    ## Variables
+    n_surfaces = 9 # 1 t/m 9
+    surfaces_base_name = '../inputs/{}/gaze_positions_on_surface_Surface{:d}WB.csv'
+    dummy_surface_base_name = '../inputs/{}/gaze_positions_on_surface_dummysurface.csv'
+    output_file_name = '../inputs/{}/merged_surfaces.csv'.format(participant_id)
+    surfaces = __constants.surfaces
+
+    dfs = {}
+
+    for n in range(1, n_surfaces + 1):
+        dfs[n] = pd.read_csv(surfaces_base_name.format(participant_id, n))
+        progress.print('Found {} rows in CSV #{}'.format(len(dfs[n]), n))
+
+        # Verwijderen onsurf = False want dan is data in dat csv bestand sowieso niet bruikbaar
+        progress.print('- Removing onsurf = False from data frame #{}'.format(n))
+        dfs[n] = dfs[n].loc[dfs[n]['on_surf'] == True]
+
+        # Het scherm is in 9 surfaces verdeeld. Elk surface heeft x-norm waardes van 0 tot 1
+        progress.print('- Adding pix_x_norm to data frame #{}'.format(n))
+        dfs[n]['pix_x_norm'] = dfs[n]['x_norm'] * (surfaces[n]['right_border'] - surfaces[n]['left_border']) 
+
+        # Waardes van pix_x_norm corrigeren
+        progress.print('- Correcting pix_x_norm values in data frame #{}'.format(n))
+        dfs[n]['true_x_scaled'] = dfs[n]['pix_x_norm'] + surfaces[n]['left_border']
+
+        # Waardes van pix_x_norm corrigeren
+        progress.print('- Creating true_y_scaled from y_norm in data frame #{}'.format(n))
+        dfs[n]['true_y_scaled'] = dfs[n]['y_norm'] * __constants.total_surface_height
+
+        # Surface nummer in nieuwe kolom dataframe
+        progress.print('- Adding surface number to data frame #{}'.format(n))
+        dfs[n]['surface_no'] = n
+
+        progress.advance(task)
+
+    # Merging into one dataframe
+    progress.print('[bold yellow]Perparing data is done. Start merging frames into one frame.')
+    merged_df = pd.concat(dfs)
+    merged_df = merged_df.sort_values(by=['gaze_timestamp'], kind='mergesort')
+
+    # We have to be smart on making the algorithm that decides which row to keep
+    # If we iterate over all the rows, it will get rather slow. Instead we do this:
+    # 1. we create a new dataframe containing all duplicates (duplicate_df) from the original dataframe
+    # 2. we remove the duplicates from the original dataframe
+    # 3. in the duplicate_df we create a new column called keep_condition: keep_condition = absolute(surface_no - 5)
+    #      examples:
+    #        surface no: 2 --> keep_condition = |2 - 5| = 3
+    #        surface no: 3 --> keep_condition = |3 - 5| = 2
+    #        surface no: 5 --> keep_condition = |5 - 5| = 0
+    #        surface no: 8 --> keep_condition = |8 - 5| = 3
+    #        surface no: 9 --> keep_condition = |9 - 5| = 4
+    #     as you can see, the closer the keep_condition is to 0, the closer the surface is to surface 5
+    # 4. now we will sort the duplicate_df on keep_condition (ascending order)
+    # 5. now we will remove all duplicates in duplicate_df BUT we keep the FIRST record
+    #     we know that the first occurence in the dataframe must be the one closest to surface 5
+    # 6. we remove the keep_condition column
+    # 7. we merge the duplicate_df with the original dataframe (merged_df) into final_df
+    # 8. we sort the final_df on gaze_timestamp and done is kees!
+
+    ## 1. Create duplicate_df
+    duplicate_df = merged_df[merged_df.duplicated('gaze_timestamp', keep=False)]
+    # print(duplicate_df[['world_timestamp', 'gaze_timestamp', 'true_x_scaled', 'surface_no']])
+    progress.print("Based on gaze_timestamp, we have found {} duplicate rows. We will now filter them.".format(len(duplicate_df)))
+    progress.advance(task)
+
+    ## 2. Remove all duplicates from the original dataframe
+    merged_df = merged_df.drop_duplicates(subset=['gaze_timestamp'], keep=False)
+    # check = merged_df[merged_df.duplicated('gaze_timestamp', keep=False)]
+    # print(check[['world_timestamp', 'gaze_timestamp', 'true_x_scaled', 'surface_no']])
+    progress.advance(task)
+
+    ## 3. create keep_condition
+    duplicate_df['keep_condition'] = abs(duplicate_df['surface_no'] - 5)
+    # print(duplicate_df[['world_timestamp', 'gaze_timestamp', 'surface_no', 'keep_condition']])
+    progress.advance(task)
+
+    ## 4. sort duplicate_df on keep_condition
+    duplicate_df = duplicate_df.sort_values(by=['keep_condition'], kind='mergesort')
+    # print(duplicate_df[['world_timestamp', 'gaze_timestamp', 'surface_no', 'keep_condition']])
+    progress.advance(task)
+
+    ## 5. remove duplicates (on gaze_timestamp) from duplicate_df, but keep first
+    duplicate_df = duplicate_df.drop_duplicates(subset=['gaze_timestamp'], keep='first')
+    # check = duplicate_df[duplicate_df.duplicated('gaze_timestamp', keep=False)]
+    # print(check[['world_timestamp', 'gaze_timestamp', 'true_x_scaled', 'surface_no']])
+    progress.advance(task)
+
+    ## 6. remove the keep_condition column
+    duplicate_df = duplicate_df.drop(columns=['keep_condition'])
+    # print(duplicate_df[['world_timestamp', 'gaze_timestamp', 'surface_no']])
+    progress.advance(task)
+
+    ## 7. Merge duplicate_df and merged_df into final_df
+    final_df = pd.concat([merged_df, duplicate_df])
+    # print(final_df[['world_timestamp', 'gaze_timestamp', 'surface_no']])
+    check = final_df[final_df.duplicated('gaze_timestamp', keep=False)]
+    # print(check[['world_timestamp', 'gaze_timestamp', 'true_x_scaled', 'surface_no']])
+    progress.print("We have filtered all duplicates. Based on gaze_timestamp, the final dataframe now contains {} duplicate rows.".format(len(check)))
+    progress.advance(task)
+
+    ## 8. sort final_df
+    final_df = final_df.sort_values(by=['gaze_timestamp'], kind='mergesort')
+    progress.advance(task)
+
+    ## 9. Correct the offset by finding the first gaze_timestamp from the dummy surface and remove everything 
+    # before it from the final dataset.
+    dummy_df = pd.read_csv(dummy_surface_base_name.format(participant_id))
+    first_gaze_timestamp = dummy_df.iloc[0]['gaze_timestamp']
+    final_df = final_df[final_df['gaze_timestamp'] >= first_gaze_timestamp]
+    progress.print("We are now fetching the first known gaze timestamp from the dummy surfaces, and removing everything before it")
+    progress.advance(task)
+
+    ## 10. Add offsets to true_x_scaled and true_y_scaled so the center of the screen is (0, 0)
+    final_df['true_x_scaled'] = final_df['true_x_scaled'] - __constants.total_surface_width/2
+    final_df['true_y_scaled'] = final_df['true_y_scaled'] - __constants.total_surface_height/2
+    progress.advance(task)
+
+    ## In this script we are filling up any gaps in our data (in gaze_timestamps) 
+    ## by including rows for which on_surf = false
+    ## this position data is not useful, but we may use the confidence
+    ## and furthermore we can use the confidence
+
+    final_df['on_screen'] = True
+
+    # Fetch surface 5 (center)
+    center_surface_df = pd.read_csv(surfaces_base_name.format(participant_id, 5))
+    # Everything we add may have an on_screen = False
+    center_surface_df['on_screen'] = False
+
+    # Only surfaces with on_surf False should be considered (the other surfaces already exist in merged_surfaces)
+    to_insert_potentially_df = center_surface_df[center_surface_df['on_surf'] == False]
+
+    # Filter everything out of the df before the first gaze timestamp from the dummy surface (See step 9 above)
+    to_insert_potentially_df = to_insert_potentially_df[to_insert_potentially_df['gaze_timestamp'] >= first_gaze_timestamp]
+
+    # Compute correct coordinates (see first steps above and step 10)
+    to_insert_potentially_df['pix_x_norm'] = to_insert_potentially_df['x_norm'] * (surfaces[5]['right_border'] - surfaces[5]['left_border']) 
+
+    to_insert_potentially_df['true_x_scaled'] = to_insert_potentially_df['x_norm'] + surfaces[5]['left_border']
+    to_insert_potentially_df['true_y_scaled'] = to_insert_potentially_df['y_norm'] * __constants.total_surface_height
+
+    to_insert_potentially_df['true_x_scaled'] = to_insert_potentially_df['true_x_scaled'] - __constants.total_surface_width/2
+    to_insert_potentially_df['true_y_scaled'] = to_insert_potentially_df['true_y_scaled'] - __constants.total_surface_height/2
+
+    # Merge the merged_surfaces with everything from center (which passes conditions above)
+    new_df = pd.concat([final_df, to_insert_potentially_df]).drop_duplicates(keep='first', subset=['gaze_timestamp'])
+    progress.advance(task)
+
+    # Order the df on gaze_timestamp
+    new_df = new_df.sort_values(by=['gaze_timestamp'], kind='mergesort')
+
+    # Write the csv
+    progress.print("We will start outputting the dataframe to a csv file. This will take a second.")
+    new_df.to_csv(output_file_name, index=False)
+    progress.print('[green bold]We are done! The new csv is outputted to {} and contains {} rows.'.format(output_file_name, len(new_df)))
