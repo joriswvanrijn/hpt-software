@@ -2,6 +2,7 @@ import __constants
 from utils import ask_for_participant_id, ask_for_starting_task, prepare_tasks, we_are_not_skipping_task
 from merge_gaze_positions import merge_gaze_positions
 from identify_gaps_in_gaze_positions import identify_gaps_in_gaze_positions
+from identify_hits import identify_hits
 from rich.progress import Progress
 import time, sys
 
@@ -25,7 +26,8 @@ with Progress() as progress:
         identify_gaps_in_gaze_positions(participant_id, progress, tasks[1])
 
     #### 3) With the ROIs and the GPs: identify hits in the ROIs
-    # identify_hits(participant_id)
+    if(we_are_not_skipping_task(3, starting_task, progress, tasks)):
+        identify_hits(participant_id, progress, tasks[2])
 
     #### 4) Identify entries and exits for all ROIs
     # identify_entries_and_exits(participant_id)
