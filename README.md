@@ -2,7 +2,8 @@
 
 ## Notes
 
-- The folders `/inputs/`, `/outputs` and `/videos` are not supposed to be in this repository due to privacy and efficiency concerns.
+- The folders `/inputs`, `/outputs` and `/videos` are not supposed to be in this repository due to privacy and efficiency concerns.
+- For history documentation purposes: https://github.com/joriswvanrijn/hpt_poc003
 
 ## Usage
 
