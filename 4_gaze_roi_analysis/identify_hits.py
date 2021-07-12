@@ -93,8 +93,8 @@ def identify_hits(participant_id, rois_file, progress, task):
             x1, x2, y1, y2 = correct_aoi(x1, x2, y1, y2, angle)
 
             # Simple is "hit"
-            # is_hit = ((x1 < gp['true_x_scaled_SRM'] < x2) and (y1 < gp['true_y_scaled_SRM'] < y2))
-            is_hit = ((x1 < gp['true_x_scaled'] < x2) and (y1 < gp['true_y_scaled'] < y2))
+            # is_hit = ((x1 < gp['true_x_scaled'] < x2) and (y1 < gp['true_y_scaled'] < y2))
+            is_hit = ((x1 < gp['true_x_scaled_SRM'] < x2) and (y1 < gp['true_y_scaled_SRM'] < y2))
 
             if(is_hit):
                 # Change the zero to one if needed

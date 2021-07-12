@@ -153,15 +153,19 @@ def generate_output(participant_id, rois_file, progress, task):
         squeezed.index = [original_columns[n] for n in range(squeezed.count())]
         return squeezed.reindex(original_columns, fill_value=np.nan)
 
-    # df = df.apply(squeeze_nan, axis=1)
+    df = df.apply(squeeze_nan, axis=1)
 
     # Now, delete empty columns
     df.dropna(how='all', axis=1, inplace=True)
 
     progress.advance(task)
 
+    # Calculate dwell duration by getting the sum of dwell_duration
+    df['total_dwell_duration'] = df.filter(regex='dwell_time\([\d]*\)',axis=1).sum(axis=1)
+
     # Calculate percentage dwell_duration/total_appearance
-    # df['ratio_dwell_duration_total_appereance'] = df['total_dwell_duration']/df['total_appearance_duration']*100
+    ratio_dwell_duration_total_appereance = df['total_dwell_duration']/df['total_appearance_duration']*100
+    df.insert(6, 'ratio_dwell_duration_total_appereance', ratio_dwell_duration_total_appereance)
 
     # Add tresholds to output
     df_w = df.append({
@@ -172,9 +176,6 @@ def generate_output(participant_id, rois_file, progress, task):
     }, ignore_index=True)
 
     progress.advance(task)
-
-    # Calculate dwell duration by getting the sum of dwell_duration
-    df_w['total_dwell_duration'] = df_w.filter(regex='dwell_time\([\d]*\)',axis=1).sum(axis=1)
 
     # Write to csv
     output_file_name = '../outputs/{}/output_{}.csv'.format(participant_id, datetime.now().strftime("%Y_%m_%d-%H_%M_%S"))
