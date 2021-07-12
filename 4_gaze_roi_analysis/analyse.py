@@ -1,17 +1,28 @@
 import __constants
-from utils import ask_for_participant_id, ask_for_starting_task, prepare_tasks, we_are_not_skipping_task
+from utils__general import ask_for_participant_id, ask_for_starting_task, prepare_tasks, we_are_not_skipping_task, ask_for_rois_file
 from merge_gaze_positions import merge_gaze_positions
 from identify_gaps_in_gaze_positions import identify_gaps_in_gaze_positions
 from identify_hits import identify_hits
-from rich.progress import Progress
+from identify_entries_and_exits import identify_entries_and_exits
+from generate_output import generate_output
+from rich.progress import Progress, TimeElapsedColumn, BarColumn, TimeRemainingColumn
 import time, sys
 
 # We'll run an analysis for a specific participant, thus we need an ID
 participant_id = ask_for_participant_id()
+rois_file = ask_for_rois_file()
 starting_task = ask_for_starting_task()
 
 # Set up a progress bar
-with Progress() as progress:
+progress_instance = Progress(
+    "[progress.description]{task.description}",
+    BarColumn(),
+    "[progress.percentage]{task.percentage:>3.0f}%",
+    TimeRemainingColumn(),
+    TimeElapsedColumn(),
+)
+
+with progress_instance as progress:
 
     # Setting up all tasks
     tasks = prepare_tasks(progress)
@@ -27,10 +38,14 @@ with Progress() as progress:
 
     #### 3) With the ROIs and the GPs: identify hits in the ROIs
     if(we_are_not_skipping_task(3, starting_task, progress, tasks)):
-        identify_hits(participant_id, progress, tasks[2])
+        identify_hits(participant_id, rois_file, progress, tasks[2])
 
     #### 4) Identify entries and exits for all ROIs
-    # identify_entries_and_exits(participant_id)
+    if(we_are_not_skipping_task(4, starting_task, progress, tasks)):
+        identify_entries_and_exits(participant_id, rois_file, progress, tasks[3])
 
-# 5) Generate an output.csv to use in further analysis
-# generate_output(participant_id)
+    #### 5) Generate an output.csv to use in further analysis
+    if(we_are_not_skipping_task(5, starting_task, progress, tasks)):
+        generate_output(participant_id, rois_file, progress, tasks[4])
+
+    progress.print('[bold green]Done!')

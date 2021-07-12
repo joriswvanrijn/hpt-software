@@ -12,6 +12,8 @@ def merge_gaze_positions(participant_id, progress, task):
 
     dfs = {}
 
+    progress.print('[bold yellow]We are preparing data from each surface.')
+
     for n in range(1, n_surfaces + 1):
         dfs[n] = pd.read_csv(surfaces_base_name.format(participant_id, n))
         progress.print('Found {} rows in CSV #{}'.format(len(dfs[n]), n))

@@ -10,6 +10,13 @@ z = d = distance_d = distance_to_screen_px = distance_to_screen * ppc # in pixel
 angle_a = error_angle = 2.5 # in degrees
 angle_b = minimal_angle_of_aoi = 2.5 # in degrees
 
+## Identifying entries and exits
+consecutive_0_treshold = 1
+
+# Filter short times between exits and entries
+minimal_treshold_entry_exit = 0.017 # in sec
+minimal_treshold_dwell = 0.3 # in sec
+
 ## Surfaces & screen
 total_surface_width = 5760 # in px
 total_surface_height = 1200 # in px

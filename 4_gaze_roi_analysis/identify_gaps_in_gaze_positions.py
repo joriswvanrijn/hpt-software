@@ -1,6 +1,5 @@
-from console import console
 import __constants
-from utils import show_error
+from utils__general import show_error
 import pandas as pd
 import numpy as np 
 import sys
@@ -38,10 +37,9 @@ def identify_gaps_in_gaze_positions(participant_id, progress, task):
     df['true_x_scaled_SRM'] = None
     df['true_y_scaled_SRM'] = None
 
-    counter = 0
-
     progress.print('[bold yellow]We are starting to calculate the Simple Rolling Mediam for true_x_scaled and true_y_scaled. This may take a while.')
 
+    counter = 0
     for index, sample in df.iterrows():
 
         # Some nice progress output
