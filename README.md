@@ -1,5 +1,11 @@
 # HPT software
 
+## Notes
+
+- The folders `/inputs/`, `/outputs` and `/videos` are not supposed to be in this repository due to privacy and efficiency concerns.
+
+## Usage
+
 Check all readmes:
 
 1. [ROI hinting](/1_roi_hinting/README.md)
