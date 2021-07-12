@@ -1,7 +1,5 @@
 # ROI Hinting
 
-_Folder: `/1_roi_hinting`_
-
 The goal of this part of the HPT toolset is to let experts identify MUST and MAY be seen hazards. This folder contains a Laravel applicaton. It should be uploaded to a webserver.
 
 **Usage:**
