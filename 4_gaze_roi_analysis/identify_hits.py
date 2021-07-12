@@ -50,6 +50,7 @@ def identify_hits(participant_id, rois_file, progress, task):
     df_gps_x_rois['true_y_scaled_SRM'] = 1200 - df_gps['true_y_scaled_SRM']
     df_gps_x_rois['confidence'] = df_gps['confidence']
     df_gps_x_rois['surface'] = df_gps['surface_no']
+    df_gps_x_rois['is_valid_gap'] = df_gps['is_valid_gap']
 
     new_cols = df_rois['Object ID'].unique().reshape(1, -1)[0]
     # df_gps_x_rois[new_cols] = np.zeros([len(new_cols), len(df_gps_x_rois)])

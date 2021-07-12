@@ -17,6 +17,10 @@ def generate_output(participant_id, rois_file, progress, task):
     if not os.path.isfile(input_file_name):
         show_error('Input file for step 5 is not found. Run step 4 first.', progress)
 
+    input_file_name_gps_x_rois = '../outputs/{}/df_gps_x_rois.csv'.format(participant_id)
+    if not os.path.isfile(input_file_name):
+        show_error('Input file for step 5 is not found. Run step 3 first.', progress)
+
     # Fetch all entries and exits
     a_file = open(input_file_name, "r")
     entries_and_exits = json.loads(a_file.read())
@@ -32,9 +36,7 @@ def generate_output(participant_id, rois_file, progress, task):
         'last_appearance_time',
         'total_appearance_duration',
         'total_dwell_duration',
-    #     'first_entry',
         'total_diversion_duration',
-        # more columns to come
     ])
 
     # Fill object ID
@@ -67,7 +69,7 @@ def generate_output(participant_id, rois_file, progress, task):
     df['total_appearance_duration'] = df['last_appearance_time'] - df['first_appearance_time']
     df = df.round({'total_appearance_duration': 2})
 
-        # First, set up all columns needed for entries and exist (and dwell time)
+    # First, set up all columns needed for entries and exist (and dwell time)
     longest_key = None
     longest_length = 0
 
@@ -167,12 +169,31 @@ def generate_output(participant_id, rois_file, progress, task):
     ratio_dwell_duration_total_appereance = df['total_dwell_duration']/df['total_appearance_duration']*100
     df.insert(6, 'ratio_dwell_duration_total_appereance', ratio_dwell_duration_total_appereance)
 
+    """
+    # TODO: Calculate the total_gap_duration
+    total_gap_durations = np.zeros(len(df))
+    df.insert(7, 'total_gap_duration', total_gap_durations)
+
+    df_gps_x_rois = pd.read_csv(input_file_name_gps_x_rois)
+    df_gps_x_rois['prev_actual_time'] = df_gps_x_rois['actual_time'].shift(1)
+
+    for i, row in df.iterrows():
+        object_id = row['object_id']
+        gps_for_object = df_gps_x_rois[(df_gps_x_rois[object_id] == True) & (df_gps_x_rois['is_valid_gap'] == True)]
+        progress.print(len(gps_for_object))
+    """
+
     # Add tresholds to output
     df_w = df.append({
         'object_id': 'minimal_treshold_entry_exit = {}'.format(__constants.minimal_treshold_entry_exit),
         'first_appearance_time': 'minimal_treshold_dwell = {}'.format(__constants.minimal_treshold_dwell),
         'last_appearance_time': 'minimal_angle_of_aoi = {}'.format(__constants.minimal_angle_of_aoi),
-        'total_appearance_duration': 'consecutive_0_treshold = {}'.format(__constants.consecutive_0_treshold)
+        'total_appearance_duration': 'consecutive_0_treshold = {}'.format(__constants.consecutive_0_treshold),
+        'total_dwell_duration': 'confidence_treshold = {}'.format(__constants.confidence_treshold)
+
+        # placeholders:
+        # 'ratio_dwell_duration_total_appereance': 'foobar = {}'.format(__constants.foobar),
+        # 'total_diversion_duration': 'foobar = {}'.format(__constants.foobar)
     }, ignore_index=True)
 
     progress.advance(task)
