@@ -42,17 +42,6 @@ def identify_entries_and_exits(participant_id, rois_file, progress, task):
 
         # Loop over all rois to check if we have seen a one
 
-        # for roi in rois:
-
-        #     if(hit_row[roi] == 1 and len(entries_and_exits[roi]) % 2 == 0):
-        #         # We're looping and finding a 1 AND the previous found mark was an exit
-        #         # so mark this moment as an entry
-        #         entries_and_exits[roi].append(hit_row['actual_time'])
-
-        #     if(hit_row[roi] == 0 and len(entries_and_exits[roi]) % 2 != 0):
-        #         # If we are finding a 0 and we may register an exit, do it
-        #         entries_and_exits[roi].append(hit_row['actual_time'])
-
         for roi in rois:
 
             if(hit_row[roi] == 1 and len(entries_and_exits[roi]) % 2 == 0):
@@ -60,24 +49,35 @@ def identify_entries_and_exits(participant_id, rois_file, progress, task):
                 # so mark this moment as an entry
                 entries_and_exits[roi].append(hit_row['actual_time'])
 
-            # Everytime we find a 1, reset our counters and placeholder
-            if(hit_row[roi] == 1):
-                consecutive_0_treshold_counter = 0
-                consecutive_0_treshold_first_placeholder = None
-
             if(hit_row[roi] == 0 and len(entries_and_exits[roi]) % 2 != 0):
-                # If we have no "first 0", save it
-                if(consecutive_0_treshold_first_placeholder == None):
-                    consecutive_0_treshold_first_placeholder = hit_row['actual_time']
+                # If we are finding a 0 and we may register an exit, do it
+                entries_and_exits[roi].append(hit_row['actual_time'])
+
+        # for roi in rois:
+
+        #     if(hit_row[roi] == 1 and len(entries_and_exits[roi]) % 2 == 0):
+        #         # We're looping and finding a 1 AND the previous found mark was an exit
+        #         # so mark this moment as an entry
+        #         entries_and_exits[roi].append(hit_row['actual_time'])
+
+        #     # Everytime we find a 1, reset our counters and placeholder
+        #     if(hit_row[roi] == 1):
+        #         consecutive_0_treshold_counter = 0
+        #         consecutive_0_treshold_first_placeholder = None
+
+        #     if(hit_row[roi] == 0 and len(entries_and_exits[roi]) % 2 != 0):
+        #         # If we have no "first 0", save it
+        #         if(consecutive_0_treshold_first_placeholder == None):
+        #             consecutive_0_treshold_first_placeholder = hit_row['actual_time']
                     
-                # We're looping and finding a 0 AND the previous found mark was an entry
-                # so mark this moment as an exit
-                if(consecutive_0_treshold_counter >= __constants.consecutive_0_treshold):
-                    entries_and_exits[roi].append(consecutive_0_treshold_first_placeholder)
-                    consecutive_0_treshold_counter = 0
-                    consecutive_0_treshold_first_placeholder = None
-                else:
-                    consecutive_0_treshold_counter = consecutive_0_treshold_counter + 1
+        #         # We're looping and finding a 0 AND the previous found mark was an entry
+        #         # so mark this moment as an exit
+        #         if(consecutive_0_treshold_counter >= __constants.consecutive_0_treshold):
+        #             entries_and_exits[roi].append(consecutive_0_treshold_first_placeholder)
+        #             consecutive_0_treshold_counter = 0
+        #             consecutive_0_treshold_first_placeholder = None
+        #         else:
+        #             consecutive_0_treshold_counter = consecutive_0_treshold_counter + 1
     
     progress.advance(task)
 

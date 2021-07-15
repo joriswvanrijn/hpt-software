@@ -15,7 +15,7 @@ consecutive_0_treshold = 1
 
 # Filter short times between exits and entries
 minimal_treshold_entry_exit = 0.017 # in sec
-minimal_treshold_dwell = 0.3 # in sec
+minimal_treshold_dwell = 0.03 # in sec
 
 ## Surfaces & screen
 total_surface_width = 5760 # in px

@@ -17,7 +17,7 @@ def show_error(message, progress):
     raise Exception(message)
 
 def ask_for_participant_id():
-    id = console.input("Provide the [bold cyan]participant id[/bold cyan] [i bright_black](default: validatietaak-RVR)[/i bright_black]: ") or "validatietaak-RVR"
+    id = console.input("Provide the [bold cyan]participant id[/bold cyan] [i bright_black](default: inputRVR)[/i bright_black]: ") or "inputRVR"
     check_participant_id(id)
     return id
 
