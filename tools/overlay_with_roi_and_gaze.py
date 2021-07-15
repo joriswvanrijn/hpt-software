@@ -3,11 +3,10 @@ import pandas as pd
 import cv2, os, sys
 import time, math
 
-# These references have to be updated. TODO:
-sys.path.append('../modules')
+sys.path.append('../4_gaze_rois_analysis')
 import __constants
-from aois import prepare_aios_df
-from margin_calculator import correct_aoi
+from utisl__aois import prepare_aios_df
+from utisl__margin_calculator import correct_aoi
 
 # parse the arguments used to call this script
 parser = argparse.ArgumentParser()
@@ -105,8 +104,8 @@ while(cap.isOpened()):
 
             for index, gaze_position in gaze_position_overlays.iterrows():
                 if not math.isnan(gaze_position['true_x_scaled_SRM']) and not math.isnan(gaze_position['true_y_scaled_SRM']):
-                    x = gaze_position['true_x_scaled'] + constant.total_surface_width/2
-                    y = 1200 - (gaze_position['true_y_scaled'] + constant.total_surface_height/2)
+                    x = gaze_position['true_x_scaled'] + __constants.total_surface_width/2
+                    y = 1200 - (gaze_position['true_y_scaled'] + __constants.total_surface_height/2)
 
                     # print('x: {}, y: {}'.format(x,y))
 
@@ -125,10 +124,10 @@ while(cap.isOpened()):
 
                 # Since we have "prepared" the aois into the new coordinates
                 # calculate this back
-                y1 = overlay['y1'] + constant.total_surface_height/2
-                y2 = overlay['y2'] + constant.total_surface_height/2
-                x1 = overlay['x1'] + constant.total_surface_width/2
-                x2 = overlay['x2'] + constant.total_surface_width/2
+                y1 = overlay['y1'] + __constants.total_surface_height/2
+                y2 = overlay['y2'] + __constants.total_surface_height/2
+                x1 = overlay['x1'] + __constants.total_surface_width/2
+                x2 = overlay['x2'] + __constants.total_surface_width/2
                 y1 = 1200-y1 # Inverse the y coordinates to match with pupil labs data
                 y2 = 1200-y2 
 
