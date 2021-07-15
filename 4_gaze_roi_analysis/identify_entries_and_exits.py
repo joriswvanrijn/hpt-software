@@ -41,6 +41,18 @@ def identify_entries_and_exits(participant_id, rois_file, progress, task):
         progress.advance(task)
 
         # Loop over all rois to check if we have seen a one
+
+        # for roi in rois:
+
+        #     if(hit_row[roi] == 1 and len(entries_and_exits[roi]) % 2 == 0):
+        #         # We're looping and finding a 1 AND the previous found mark was an exit
+        #         # so mark this moment as an entry
+        #         entries_and_exits[roi].append(hit_row['actual_time'])
+
+        #     if(hit_row[roi] == 0 and len(entries_and_exits[roi]) % 2 != 0):
+        #         # If we are finding a 0 and we may register an exit, do it
+        #         entries_and_exits[roi].append(hit_row['actual_time'])
+
         for roi in rois:
 
             if(hit_row[roi] == 1 and len(entries_and_exits[roi]) % 2 == 0):
