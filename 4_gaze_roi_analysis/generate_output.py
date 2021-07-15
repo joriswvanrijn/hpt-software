@@ -206,9 +206,7 @@ def generate_output(participant_id, rois_file, progress, task):
 
     progress.print("[green bold]Saved output to {}".format(output_file_name))
 
-    if platform.system() == 'Windows':
-        output_file_name = '..\outputs\{}\{}_output_{}.csv'.format(participant_id, participant_id, d)
-
-    subprocess.call(['open', output_file_name])
+    if not platform.system() == 'Windows':
+        subprocess.call(['open', output_file_name])
     
     progress.advance(task)
