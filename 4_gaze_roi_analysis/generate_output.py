@@ -9,6 +9,7 @@ import math
 import numpy as np
 from datetime import datetime
 import sys
+import platform
 
 def generate_output(participant_id, rois_file, progress, task):
     progress.print("[bold yellow]We are starting generating output")
@@ -199,10 +200,14 @@ def generate_output(participant_id, rois_file, progress, task):
     progress.advance(task)
 
     # Write to csv
-    output_file_name = '../outputs/{}/{}_output_{}.csv'.format(participant_id, participant_id, datetime.now().strftime("%Y_%m_%d-%H_%M_%S"))
+    d = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
+    output_file_name = '../outputs/{}/{}_output_{}.csv'.format(participant_id, participant_id, d)
     df_w.to_csv(output_file_name)
 
     progress.print("[green bold]Saved output to {}".format(output_file_name))
+
+    if platform.system() == 'Windows':
+        output_file_name = '..\outputs\{}\{}_output_{}.csv'.format(participant_id, participant_id, d)
 
     subprocess.call(['open', output_file_name])
     
