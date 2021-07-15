@@ -5,8 +5,8 @@ import time, math
 
 sys.path.append('../4_gaze_rois_analysis')
 import __constants
-from utisl__aois import prepare_aios_df
-from utisl__margin_calculator import correct_aoi
+from utils__aois import prepare_aios_df
+from utils__margin_calculator import correct_aoi
 
 # parse the arguments used to call this script
 parser = argparse.ArgumentParser()
