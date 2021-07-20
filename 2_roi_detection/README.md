@@ -22,10 +22,12 @@ $ python3 object_tracking.py --name vid.mp4 --start_frame=70 --label=stoplicht
 1. The video starts playing and shows the tracked object. In this state, the results are directly saved to your output csv
 1. When you're done, stop the script by hitting `[q]`
 
+> Note: it is possible to select multiple ROI's in one video! The script will automatically use all given ROI's.
+
 ## Method 2: Selection ROI
 
 ```bash
-$ python3 roi_selection.py --name="../videos/vid.mp4" --label="stoplicht" --start-frame=100
+python3 roi_selection.py --name="../videos/vid.mp4" --label="stoplicht" --start-frame=100
 ```
 
 **Usage:**
@@ -42,7 +44,7 @@ $ python3 roi_selection.py --name="../videos/vid.mp4" --label="stoplicht" --star
 ## Combining csv files
 
 ```bash
-$ python3 concat_files.py --folder data/testvideo
+python3 concat_files.py --folder data/testvideo
 ```
 
 1. Make sure all output files from script 1 and 2 are saved in one folder

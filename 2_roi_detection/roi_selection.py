@@ -77,7 +77,7 @@ def roi_selection(file, start_frame, step, max_frames):
 
         # When hitting S, the video will pause and we may select a ROI for that frame
         if key == ord("s") or frames == 1:
-            cv2.putText(frame, "Selecting ROI on frame {} and/or hit [enter] to continue.".format(frames), (30, 30), 
+            cv2.putText(frame, "Selecting ROI on frame {} and/or hit [space] to continue.".format(frames), (30, 30), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA);
             
             roiBB = cv2.selectROI('frame', frame, fromCenter=False) 
