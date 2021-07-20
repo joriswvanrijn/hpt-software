@@ -10,6 +10,7 @@ import numpy as np
 from datetime import datetime
 import sys
 import platform
+import re
 
 def generate_output(participant_id, rois_file, progress, task):
     progress.print("[bold yellow]We are starting generating output")
@@ -37,6 +38,7 @@ def generate_output(participant_id, rois_file, progress, task):
         'first_entry_time',
         'last_appearance_time',
         'total_appearance_duration',
+        'amount_entries_exits',
         'total_dwell_duration',
         'total_diversion_duration',
     ])
@@ -68,6 +70,9 @@ def generate_output(participant_id, rois_file, progress, task):
     # Total appearance duration
     df['total_appearance_duration'] = df['last_appearance_time'] - df['first_appearance_time']
     df['total_dwell_duration'] = 0
+
+    # Amount of entries and exits
+    df['amount_entries_exits'] = 0
 
     # Round time values
     df = df.round({'first_appearance_time': 2, 'last_appearance_time': 2 })
@@ -175,6 +180,23 @@ def generate_output(participant_id, rois_file, progress, task):
     # Calculate percentage dwell_duration/total_appearance
     ratio_dwell_duration_total_appereance = df['total_dwell_duration']/df['total_appearance_duration']*100
     df.insert(6, 'ratio_dwell_duration_total_appereance', ratio_dwell_duration_total_appereance)
+
+    # Calcualte the amount of entries and exits
+    last_column_name = df.columns[-1]
+    last_column_regex = re.search("dwell_time\((\d*)\)", last_column_name)
+    last_column = int(last_column_regex.group(1))
+
+    for index, row in df.iterrows():
+        amount_entries_exits_for_row = 0
+
+        for i in range(last_column):
+            value_of_dwell_for_row = df.iloc[index, df.columns.get_loc('dwell_time({})'.format(i + 1))]
+
+            if(not math.isnan(value_of_dwell_for_row)):
+                amount_entries_exits_for_row = amount_entries_exits_for_row + 1
+
+        df.iloc[index, df.columns.get_loc('amount_entries_exits')] = amount_entries_exits_for_row
+        progress.print("row {} has {} entries & exits".format(row['object_id'], amount_entries_exits_for_row))
 
     """
     # TODO: Calculate the total_gap_duration
