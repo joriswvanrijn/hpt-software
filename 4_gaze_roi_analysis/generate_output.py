@@ -35,9 +35,10 @@ def generate_output(participant_id, rois_file, progress, task):
     df = pd.DataFrame(columns = [
         'object_id',
         'first_appearance_time',
-        'first_entry_time',
         'last_appearance_time',
         'total_appearance_duration',
+        'first_entry_time',
+        'time_to_first_entry',
         'amount_entries_exits',
         'total_dwell_duration',
         'total_diversion_duration',
@@ -47,11 +48,6 @@ def generate_output(participant_id, rois_file, progress, task):
     df['object_id'] = (df_rois['Object ID'].unique().reshape(1, -1)[0])
     df = df.sort_values(['object_id'])
     df = df.reset_index()
-
-    # First entry time
-    for index, row in df.iterrows():
-        first_entry_time = entries_and_exits[row['object_id']][0]
-        df.iloc[index, df.columns.get_loc('first_entry_time')] = first_entry_time
 
     # First appearance time
     df_temp = df_rois.copy()
@@ -69,6 +65,16 @@ def generate_output(participant_id, rois_file, progress, task):
 
     # Total appearance duration
     df['total_appearance_duration'] = df['last_appearance_time'] - df['first_appearance_time']
+
+    # First entry time
+    for index, row in df.iterrows():
+        first_entry_time = entries_and_exits[row['object_id']][0]
+        df.iloc[index, df.columns.get_loc('first_entry_time')] = first_entry_time
+
+    # Time to first entry
+    df['time_to_first_entry'] = df['first_entry_time'] - df['first_appearance_time']
+
+
     df['total_dwell_duration'] = 0
 
     # Amount of entries and exits
