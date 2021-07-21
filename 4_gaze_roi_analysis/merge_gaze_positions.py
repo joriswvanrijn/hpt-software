@@ -18,23 +18,23 @@ def merge_gaze_positions(participant_id, progress, task):
         dfs[n] = pd.read_csv(surfaces_base_name.format(participant_id, n))
         progress.print('Found {} rows in CSV #{}'.format(len(dfs[n]), n))
 
-        # Verwijderen onsurf = False want dan is data in dat csv bestand sowieso niet bruikbaar
+        # Remove onsurf = False, participant did not look in this surface so no usable x and y coordinates to transform.
         progress.print('- Removing onsurf = False from data frame #{}'.format(n))
         dfs[n] = dfs[n].loc[dfs[n]['on_surf'] == True]
 
-        # Het scherm is in 9 surfaces verdeeld. Elk surface heeft x-norm waardes van 0 tot 1
+        # The screen is divided in 9 surfaces. Each surface has a x-norm value of 0 to 1.
         progress.print('- Adding pix_x_norm to data frame #{}'.format(n))
         dfs[n]['pix_x_norm'] = dfs[n]['x_norm'] * (surfaces[n]['right_border'] - surfaces[n]['left_border']) 
 
-        # Waardes van pix_x_norm corrigeren
+        # Correcting values of pix_x_norm.
         progress.print('- Correcting pix_x_norm values in data frame #{}'.format(n))
         dfs[n]['true_x_scaled'] = dfs[n]['pix_x_norm'] + surfaces[n]['left_border']
 
-        # Waardes van pix_x_norm corrigeren
+        # Correcting values of pix_y_norm.
         progress.print('- Creating true_y_scaled from y_norm in data frame #{}'.format(n))
         dfs[n]['true_y_scaled'] = dfs[n]['y_norm'] * __constants.total_surface_height
 
-        # Surface nummer in nieuwe kolom dataframe
+        # New collum with surface number.
         progress.print('- Adding surface number to data frame #{}'.format(n))
         dfs[n]['surface_no'] = n
 
@@ -45,6 +45,8 @@ def merge_gaze_positions(participant_id, progress, task):
     merged_df = pd.concat(dfs)
     merged_df = merged_df.sort_values(by=['gaze_timestamp'], kind='mergesort')
 
+    # The surfaces overlap in order to always have data of each part of the screen. 
+    # Hence, duplicate rows can exist if a participant looks in the overlap region. We decide to keep the data of the most central surface.
     # We have to be smart on making the algorithm that decides which row to keep
     # If we iterate over all the rows, it will get rather slow. Instead we do this:
     # 1. we create a new dataframe containing all duplicates (duplicate_df) from the original dataframe
@@ -122,10 +124,9 @@ def merge_gaze_positions(participant_id, progress, task):
     final_df['true_y_scaled'] = final_df['true_y_scaled'] - __constants.total_surface_height/2
     progress.advance(task)
 
-    ## In this script we are filling up any gaps in our data (in gaze_timestamps) 
+    ## In this script we are filling up the gaps that were created be removing on_surf = false (in gaze_timestamps) 
     ## by including rows for which on_surf = false
-    ## this position data is not useful, but we may use the confidence
-    ## and furthermore we can use the confidence
+    ## this position data is not useful, but we want to create a complete database and may later use the confidence
 
     final_df['on_screen'] = True
 
