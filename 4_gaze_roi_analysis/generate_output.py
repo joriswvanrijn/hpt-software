@@ -223,12 +223,14 @@ def generate_output(participant_id, rois_file, progress, task):
         'object_id': 'minimal_treshold_entry_exit = {}'.format(__constants.minimal_treshold_entry_exit),
         'first_appearance_time': 'minimal_treshold_dwell = {}'.format(__constants.minimal_treshold_dwell),
         'last_appearance_time': 'minimal_angle_of_aoi = {}'.format(__constants.minimal_angle_of_aoi),
-        'total_appearance_duration': 'consecutive_0_treshold = {}'.format(__constants.consecutive_0_treshold),
-        'total_dwell_duration': 'confidence_treshold = {}'.format(__constants.confidence_treshold)
+        'total_appearance_duration': 'confidence_treshold = {}'.format(__constants.confidence_treshold),       
+        'total_dwell_duration': 'error_angle = {}'.format(__constants.angle_a),
+        'ratio_dwell_duration_total_appereance': 'minimal_angle_of_aoi = {}'.format(__constants.angle_b)       
+
 
         # placeholders:
-        # 'ratio_dwell_duration_total_appereance': 'foobar = {}'.format(__constants.foobar),
         # 'total_diversion_duration': 'foobar = {}'.format(__constants.foobar)
+
     }, ignore_index=True)
 
     progress.advance(task)

@@ -45,10 +45,14 @@ df_gp = pd.read_csv(gaze_data_path, header=0)
 # Prepare data
 df = prepare_aios_df(df)
 
-df_gp['actual_time'] = df_gp['gaze_timestamp']-abs(df_gp.loc[0, 'gaze_timestamp'])
-# df_gp['true_y_scaled'] = 1200-df_gp['true_y_scaled'] # Inverse the y coordinates 
-df_gp['frame'] = df_gp['actual_time']*24.97
-df_gp['frame'] = df_gp['frame'].astype(int)
+if df_gp['gaze_timestamp'][0] < 0:
+    df_gp['actual_time'] = df_gp['gaze_timestamp'] + abs(df_gp.loc[0, 'gaze_timestamp'])
+    df_gp['frame'] = df_gp['actual_time']*24.97
+    df_gp['frame'] = df_gp['frame'].astype(int)
+else:
+    df_gp['actual_time'] = df_gp['gaze_timestamp'] - abs(df_gp.loc[0, 'gaze_timestamp'])
+    df_gp['frame'] = df_gp['actual_time']*24.97
+    df_gp['frame'] = df_gp['frame'].astype(int)
 
 # Read video
 cap = cv2.VideoCapture(video_path)

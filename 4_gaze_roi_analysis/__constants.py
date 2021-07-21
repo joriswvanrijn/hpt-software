@@ -10,8 +10,8 @@ z = d = distance_d = distance_to_screen_px = distance_to_screen * ppc # in pixel
 angle_a = error_angle = 2.5 # in degrees
 angle_b = minimal_angle_of_aoi = 2.5 # in degrees
 
-## Identifying entries and exits
-consecutive_0_treshold = 1
+# ## Identifying entries and exits
+# consecutive_0_treshold = 1
 
 # Filter short times between exits and entries
 minimal_treshold_entry_exit = 0.2 # in sec
