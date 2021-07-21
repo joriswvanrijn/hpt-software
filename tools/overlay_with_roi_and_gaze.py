@@ -5,7 +5,7 @@ import time, math
 
 sys.path.append('../4_gaze_rois_analysis')
 import __constants
-from utils__aois import prepare_aios_df
+from utils__aois import prepare_aois_df
 from utils__margin_calculator import correct_aoi
 
 # parse the arguments used to call this script
@@ -43,15 +43,15 @@ df = pd.read_csv(data_path, header=0)
 df_gp = pd.read_csv(gaze_data_path, header=0)
 
 # Prepare data
-df = prepare_aios_df(df)
+df = prepare_aois_df(df)
 
 if df_gp['gaze_timestamp'][0] < 0:
     df_gp['actual_time'] = df_gp['gaze_timestamp'] + abs(df_gp.loc[0, 'gaze_timestamp'])
-    df_gp['frame'] = df_gp['actual_time']*24.97
+    df_gp['frame'] = df_gp['actual_time']*25 + 0.00001
     df_gp['frame'] = df_gp['frame'].astype(int)
 else:
     df_gp['actual_time'] = df_gp['gaze_timestamp'] - abs(df_gp.loc[0, 'gaze_timestamp'])
-    df_gp['frame'] = df_gp['actual_time']*24.97
+    df_gp['frame'] = df_gp['actual_time']*25 + 0.00001
     df_gp['frame'] = df_gp['frame'].astype(int)
 
 # Read video
@@ -98,7 +98,7 @@ while(cap.isOpened()):
             overlays = df[df['Frame'] == (frame_nr - offset)]
             
             # HIERZO: inladen GP voor tijd (ongeveer) rond hier
-            actual_time  = frame_nr / 24.97
+            actual_time  = frame_nr / 25
             # print('considering frame {} -> actual time: {}'.format(frame_nr, actual_time))
 
             marge = 0.01

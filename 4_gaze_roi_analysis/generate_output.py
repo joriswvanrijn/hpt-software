@@ -4,7 +4,7 @@ import os.path
 import subprocess
 import json
 import pandas as pd
-from utils__aois import prepare_aios_df
+from utils__aois import prepare_aois_df
 import math
 import numpy as np
 from datetime import datetime
@@ -29,7 +29,7 @@ def generate_output(participant_id, rois_file, progress, task):
 
     # Perpare ROI's
     df_rois = pd.read_csv('../rois/{}'.format(rois_file))
-    df_rois = prepare_aios_df(df_rois)
+    df_rois = prepare_aois_df(df_rois)
 
     # Set up the basics of the output file
     df = pd.DataFrame(columns = [
@@ -65,6 +65,7 @@ def generate_output(participant_id, rois_file, progress, task):
 
     # Total appearance duration
     df['total_appearance_duration'] = df['last_appearance_time'] - df['first_appearance_time']
+    df = df.round({'total_appearance_duration': 2})
 
     # First entry time
     for index, row in df.iterrows():
@@ -82,10 +83,6 @@ def generate_output(participant_id, rois_file, progress, task):
 
     # Round time values
     df = df.round({'first_appearance_time': 2, 'last_appearance_time': 2 })
-
-    # Total appearance duration
-    df['total_appearance_duration'] = df['last_appearance_time'] - df['first_appearance_time']
-    df = df.round({'total_appearance_duration': 2})
 
     # First, set up all columns needed for entries and exist (and dwell time)
     longest_key = None

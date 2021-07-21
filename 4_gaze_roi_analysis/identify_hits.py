@@ -1,6 +1,6 @@
 import __constants
 import pandas as pd
-from utils__aois import prepare_aios_df
+from utils__aois import prepare_aois_df
 from utils__margin_calculator import correct_aoi
 import numpy as np
 from utils__general import show_error
@@ -11,7 +11,7 @@ def identify_hits(participant_id, rois_file, progress, task):
 
     # Perpare ROI's
     df_rois = pd.read_csv('../rois/{}'.format(rois_file))
-    df_rois = prepare_aios_df(df_rois)
+    df_rois = prepare_aois_df(df_rois)
 
     # Check if our input file exists
     input_file_name = '../inputs/{}/merged_surfaces_with_gaps.csv'.format(participant_id)
@@ -27,10 +27,10 @@ def identify_hits(participant_id, rois_file, progress, task):
 
     if df_gps['gaze_timestamp'][0] < 0:
         df_gps['actual_time'] = df_gps['gaze_timestamp'] + abs(df_gps.loc[0, 'gaze_timestamp'])
-        df_gps['frame'] = df_gps['actual_time']*24.97
+        df_gps['frame'] = df_gps['actual_time']*25 + 0.00001
     else:
         df_gps['actual_time'] = df_gps['gaze_timestamp'] - abs(df_gps.loc[0, 'gaze_timestamp'])
-        df_gps['frame'] = df_gps['actual_time']*24.97
+        df_gps['frame'] = df_gps['actual_time']*25 + 0.00001 
 
     # df_gps = df_gps.round({'actual_time': 2, 'frame': 0})
     df_gps['frame'] = np.ceil(df_gps['frame'])

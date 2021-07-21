@@ -1,6 +1,6 @@
 import __constants
 import pandas as pd
-from utils__aois import prepare_aios_df
+from utils__aois import prepare_aois_df
 from utils__general import show_error
 import os.path
 import json
@@ -14,7 +14,7 @@ def identify_entries_and_exits(participant_id, rois_file, progress, task):
 
     # Perpare ROI's
     df_rois = pd.read_csv('../rois/{}'.format(rois_file))
-    df_rois = prepare_aios_df(df_rois)
+    df_rois = prepare_aois_df(df_rois)
 
     entries_and_exits = {}
 
