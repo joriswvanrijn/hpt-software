@@ -14,7 +14,7 @@ angle_b = minimal_angle_of_aoi = 2.5 # in degrees
 # consecutive_0_treshold = 1
 
 # Filter short times between exits and entries
-minimal_treshold_entry_exit = 0.1 # in sec
+minimal_treshold_entry_exit = 0.2 # in sec
 minimal_treshold_dwell = 0.04 # in sec
 
 ## Surfaces & screen
