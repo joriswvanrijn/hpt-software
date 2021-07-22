@@ -88,8 +88,8 @@ def generate_output(participant_id, rois_file, progress, task):
     # Amount of entries and exits
     df['amount_entries_exits'] = 0
 
-    # Round time values
-    df = df.round({'first_appearance_time': 2, 'last_appearance_time': 2 })
+    # Round time values TODO:
+    # df = df.round({'first_appearance_time': 2, 'last_appearance_time': 2 })
 
     # First, set up all columns needed for entries and exist (and dwell time)
     longest_key = None

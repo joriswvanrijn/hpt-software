@@ -82,7 +82,7 @@ def identify_hits(participant_id, rois_file, progress, task):
 
         # Fetch ROIS on the same frame as the GP, 
         # if no rois are found, go to the next gaze position
-        rois_to_consider = df_rois[df_rois['frame'] == gp['frame']]
+        rois_to_consider = df_rois[df_rois['frame'] == gp['frame'] - 1]
 
         if(len(rois_to_consider) == 0):
             continue
