@@ -3,10 +3,13 @@ import pandas as pd
 import cv2, os, sys
 import time, math
 
-sys.path.append('../4_gaze_rois_analysis')
+sys.path.append('../4_gaze_roi_analysis')
 import __constants
 from utils__aois import prepare_aois_df
 from utils__margin_calculator import correct_aoi
+
+# Set window dimensions
+FRAME_WIDTH = int(2880 * 0.4)
 
 # parse the arguments used to call this script
 parser = argparse.ArgumentParser()
@@ -161,7 +164,7 @@ while(cap.isOpened()):
                 cv2.rectangle(frame, new_p1, new_p2, color2, 2, 1)
 
             # Display the resulting frame
-            frame = ResizeWithAspectRatio(frame, width=2500) 
+            frame = ResizeWithAspectRatio(frame, width=FRAME_WIDTH) 
             cv2.imshow('Frame', frame) 
             cv2.moveWindow('Frame', 20, 20)
 

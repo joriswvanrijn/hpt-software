@@ -3,13 +3,13 @@
 ## Overlaying ROIS and gaze positions over a video
 
 ```bash
-$ python3 overlay_with_roi_and_gaze.py --video="../videos/Validatietaak.mp4" --data="../rois/validatietaak.csv" --gazedata="../inputs/validatietaak-RVR/merged_surfaces_with_gaps.csv" --start_frame=1000
+python3 overlay_with_roi_and_gaze.py --video="../videos/Validatietaak.mp4" --data="../rois/validatietaak.csv" --gazedata="../inputs/validatietaak-RVR/merged_surfaces_with_gaps.csv" --start_frame=1000
 ```
 
 ## Overlaying ROIS over a video
 
 ```bash
-$ python3 overlay_with_rois.py --data '../rois/validatietaak.csv' --video '../videos/Validatietaak.mp4'
+python3 overlay_with_rois.py --data '../rois/validatietaak.csv' --video '../videos/Validatietaak.mp4'
 ```
 
 **Usage**
