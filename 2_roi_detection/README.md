@@ -10,7 +10,7 @@ The goal of this part of the HPT tooling is to translate humanly-identified MUST
 ## Method 1: Tracking objects semi-automatically
 
 ```bash
-python3 object_tracking.py --name "vid.mp4" --label="stoplicht" --start_frame=70
+python3 object_tracking.py --name "../videos/vid.mp4" --label="stoplicht" --start_frame=70
 ```
 
 **Usage:**
