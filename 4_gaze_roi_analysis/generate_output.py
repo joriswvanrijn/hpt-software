@@ -12,6 +12,13 @@ import sys
 import platform
 import re
 
+# We are left with some NaN values, let's squeeze the rows
+def squeeze_nan(x):
+    original_columns = x.index.tolist()
+    squeezed = x.dropna()
+    squeezed.index = [original_columns[n] for n in range(squeezed.count())]
+    return squeezed.reindex(original_columns, fill_value=np.nan)
+
 def generate_output(participant_id, rois_file, progress, task):
     progress.print("[bold yellow]We are starting generating output")
 
@@ -130,16 +137,19 @@ def generate_output(participant_id, rois_file, progress, task):
     df['total_diversion_duration'] = 0
 
     # Remove short durations between exits and entries
-    for i in range(sets_to_add):
+    i = 0
+    while i < sets_to_add: 
         # for each set entry, exit, dwell
         n = i + 1
         if n > 1:
             for index, row in df.iterrows():
                 # dur = duration_between_entry_and_previous_exit
-                if row['entry({})'.format(n)] != None and row['exit({})'.format(n-1)] != None:
+                if 'entry({})'.format(n) in df and 'exit({})'.format(n-1) in df and 'exit({})'.format(n-1) in df and row['entry({})'.format(n)] != None and row['exit({})'.format(n-1)] != None:
                     dur = row['entry({})'.format(n)] - row['exit({})'.format(n-1)]
                     
                     if(dur < __constants.minimal_treshold_entry_exit):
+                        progress.print('found a duration of {} so we\'re merging this entry&exit pair with the previous one'.format(dur))
+
                         # replace the exit(n-1) with the exit(n)
                         df.at[index, 'exit({})'.format(n - 1)] = row['exit({})'.format(n)]
                         # take the sum of dwell(n-1) and dwell(n)
@@ -147,6 +157,12 @@ def generate_output(participant_id, rois_file, progress, task):
                         df.at[index, 'entry({})'.format(n)] = None
                         df.at[index, 'exit({})'.format(n)] = None
                         df.at[index, 'dwell_time({})'.format(n)] = None
+
+                        # After removing a short interval between exit(n-1) and entry(n):
+                        # Squeeze the empty fields and reset the counter
+                        df = df.apply(squeeze_nan, axis=1)
+                        i = 0
+        i = i + 1
 
     progress.advance(task)
 
@@ -162,15 +178,6 @@ def generate_output(participant_id, rois_file, progress, task):
                     df.at[index, 'dwell_time({})'.format(n)] = None
 
     progress.advance(task)
-
-    # We are left with some NaN values, let's squeeze the rows
-    def squeeze_nan(x):
-        original_columns = x.index.tolist()
-        squeezed = x.dropna()
-        squeezed.index = [original_columns[n] for n in range(squeezed.count())]
-        return squeezed.reindex(original_columns, fill_value=np.nan)
-
-    df = df.apply(squeeze_nan, axis=1)
 
     # Now, delete empty columns
     df.dropna(how='all', axis=1, inplace=True)
@@ -193,27 +200,14 @@ def generate_output(participant_id, rois_file, progress, task):
         amount_entries_exits_for_row = 0
 
         for i in range(last_column):
-            value_of_dwell_for_row = df.iloc[index, df.columns.get_loc('dwell_time({})'.format(i + 1))]
+            if 'dwell_time({})'.format(i + 1) in df:
+                value_of_dwell_for_row = df.iloc[index, df.columns.get_loc('dwell_time({})'.format(i + 1))]
 
-            if(not math.isnan(value_of_dwell_for_row)):
-                amount_entries_exits_for_row = amount_entries_exits_for_row + 1
+                if(not math.isnan(value_of_dwell_for_row)):
+                    amount_entries_exits_for_row = amount_entries_exits_for_row + 1
 
         df.iloc[index, df.columns.get_loc('amount_entries_exits')] = amount_entries_exits_for_row
         progress.print("row {} has {} entries & exits".format(row['object_id'], amount_entries_exits_for_row))
-
-    """
-    # TODO: Calculate the total_gap_duration
-    total_gap_durations = np.zeros(len(df))
-    df.insert(7, 'total_gap_duration', total_gap_durations)
-
-    df_gps_x_rois = pd.read_csv(input_file_name_gps_x_rois)
-    df_gps_x_rois['prev_actual_time'] = df_gps_x_rois['actual_time'].shift(1)
-
-    for i, row in df.iterrows():
-        object_id = row['object_id']
-        gps_for_object = df_gps_x_rois[(df_gps_x_rois[object_id] == True) & (df_gps_x_rois['is_valid_gap'] == True)]
-        progress.print(len(gps_for_object))
-    """
 
     # Add tresholds to output
     df_w = df.append({
