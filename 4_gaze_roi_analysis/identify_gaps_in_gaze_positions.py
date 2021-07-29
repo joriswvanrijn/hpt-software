@@ -6,19 +6,17 @@ import sys
 import statistics
 import os.path
 
-# 1. input blinks.csv
-# 2. is_blink: for rows in merged_surfaces.csv --> start_timestamp <= gaze_timestamp <= end_timestamp --> blink = True/Yes/1, else False/No/0
-# 3. rows before dummysurface should be skipped
-# 4.  df['is_valid_gap'] = (df['on_screen'] == False) | df['is_blink']
-# 5. Rolling median stays the same
-
 def identify_gaps_in_gaze_positions(participant_id, progress, task):
     input_file_name = '../inputs/{}/merged_surfaces.csv'.format(participant_id)
     output_file_name = '../inputs/{}/merged_surfaces_with_gaps.csv'.format(participant_id)
+    input_file_name_blinks = '../inputs/{}/blinks.csv'.format(participant_id)
 
     # Check if our input file exists
     if not os.path.isfile(input_file_name):
         show_error('Input file for step 2 is not found. Run step 1 first.', progress)
+
+    if not os.path.isfile(input_file_name_blinks):
+        show_error('No blinks.csv found.', progress)
 
     df = pd.read_csv(input_file_name)
 
@@ -26,10 +24,17 @@ def identify_gaps_in_gaze_positions(participant_id, progress, task):
     progress.update(task, total=(len(df)-1 + 2))
     progress.print('[bold yellow]We are starting identifying gaps in {}'.format(input_file_name))
 
-    # Rolling average of confidence to establish is_blink
+    # Use input blinks.csv to populate is_blink column
     df['is_blink'] = False
-    df['confidence_SMA'] = df['confidence'].rolling(window=3, center=True).mean()
-    df.loc[(df['confidence_SMA'] < __constants.confidence_treshold), 'is_blink'] = True
+    blinks = pd.read_csv(input_file_name_blinks)
+
+    for r, blink in blinks.iterrows():
+        start = blink['start_timestamp'] - 0.1 #(100ms)
+        end = blink['end_timestamp'] + 0.1 #(100ms)
+        progress.print('Settings blinks between {} and {}'.format(start, end))        
+        df.loc[(start <= df['gaze_timestamp']) & (end >= df['gaze_timestamp']), 'is_blink'] = True
+
+    progress.print('Found {} rows which had to be set is_blink = True'.format(len(df[df['is_blink'] == True])))
     progress.print('We have detected blinks')
     progress.advance(task)
 
