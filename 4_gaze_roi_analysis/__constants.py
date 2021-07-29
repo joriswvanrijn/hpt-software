@@ -7,15 +7,15 @@ ppi = 94.34 # px per inch
 ppc = ppi/2.54 # px per cm 37,141732283
 z = d = distance_d = distance_to_screen_px = distance_to_screen * ppc # in pixels
 
-angle_a = error_angle = 2.5 # in degrees
-angle_b = minimal_angle_of_aoi = 2.5 # in degrees
+angle_a = error_angle = 1.5 # in degrees
+angle_b = minimal_angle_of_aoi = 0 # in degrees
 
 # ## Identifying entries and exits
 # consecutive_0_treshold = 1
 
 # Filter short times between exits and entries
-minimal_treshold_entry_exit = 0.2 # in sec
-minimal_treshold_dwell = 0.04 # in sec
+minimal_treshold_entry_exit = 0.1 # in sec
+minimal_treshold_dwell = 0.1 # in sec
 
 ## Surfaces & screen
 total_surface_width = 5760 # in px
