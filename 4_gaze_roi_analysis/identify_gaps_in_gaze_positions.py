@@ -6,6 +6,12 @@ import sys
 import statistics
 import os.path
 
+# 1. input blinks.csv
+# 2. is_blink: for rows in merged_surfaces.csv --> start_timestamp <= gaze_timestamp <= end_timestamp --> blink = True/Yes/1, else False/No/0
+# 3. rows before dummysurface should be skipped
+# 4.  df['is_valid_gap'] = (df['on_screen'] == False) | df['is_blink']
+# 5. Rolling median stays the same
+
 def identify_gaps_in_gaze_positions(participant_id, progress, task):
     input_file_name = '../inputs/{}/merged_surfaces.csv'.format(participant_id)
     output_file_name = '../inputs/{}/merged_surfaces_with_gaps.csv'.format(participant_id)

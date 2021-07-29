@@ -191,6 +191,9 @@ def generate_output(participant_id, rois_file, progress, task):
     ratio_dwell_duration_total_appereance = df['total_dwell_duration']/df['total_appearance_duration']*100
     df.insert(6, 'ratio_dwell_duration_total_appereance', ratio_dwell_duration_total_appereance)
 
+    # Total diversion duration
+    df['total_diversion_duration'] = df['total_appearance_duration'] - df['total_dwell_duration']
+
     # Calcualte the amount of entries and exits
     last_column_name = df.columns[-1]
     last_column_regex = re.search("dwell_time\((\d*)\)", last_column_name)
