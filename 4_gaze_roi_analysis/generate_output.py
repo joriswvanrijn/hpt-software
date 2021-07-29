@@ -82,10 +82,9 @@ def generate_output(participant_id, rois_file, progress, task):
     # Time to first entry
     df['time_to_first_entry'] = df['first_entry_time'] - df['first_appearance_time']
 
-
+    # Set some 0's; we'll fill it later
+    df['total_diversion_duration'] = 0
     df['total_dwell_duration'] = 0
-
-    # Amount of entries and exits
     df['amount_entries_exits'] = 0
 
     # Round time values TODO:
@@ -132,9 +131,6 @@ def generate_output(participant_id, rois_file, progress, task):
                 df.at[index, 'dwell_time({})'.format(n)] = dwell_time_n           
 
     progress.advance(task)
-
-    # Add empty columns
-    df['total_diversion_duration'] = 0
 
     # Remove short durations between exits and entries
     i = 0
@@ -211,6 +207,9 @@ def generate_output(participant_id, rois_file, progress, task):
 
         df.iloc[index, df.columns.get_loc('amount_entries_exits')] = amount_entries_exits_for_row
         progress.print("row {} has {} entries & exits".format(row['object_id'], amount_entries_exits_for_row))
+
+    # Add empty columns
+    df['total_diversion_duration'] = df['total_appearance_duration'] - df['total_dwell_duration']
 
     # Add tresholds to output
     df_w = df.append({
