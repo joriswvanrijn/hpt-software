@@ -24,22 +24,25 @@ def check_calibration_surfaces(participant_id, calibration_file, progress, task)
     a_file = open(input_file_name, "r")
     calibration_frames = json.loads(a_file.read())
 
-    i = 0
-    for row in calibration_frames:
-        # print(row['start'])
-        # print(row['end'])
+    # progress.print('[yellow]Calibration surface is {} rows long'.format(len(calibration_surface)))
 
-        # expect rows in calibration_surface to be found for which:
-        # row['start'] <= calibration_surface['frame'] <= row['end']
+    # for row in calibration_frames:
+    #     progress.print('We are filtering all rows from our calibration surface between {} and {}'.format(row['start'], row['end']))
+    #     calibration_surface = calibration_surface.drop(calibration_surface[(calibration_surface['frame'] < row['end']) & (calibration_surface['frame'] > row['start'])].index)
 
-        # rows_within_calibration = calibration_surface[(row['start'] <= calibration_surface['frame']) & row['end'] >= calibration_surface['frame']]
+    # progress.print('[yellow]Calibration surface is {} rows long'.format(len(calibration_surface)))
 
-        # print('In calibration surface {} we found {} gaze position rows'.format(i, len(rows_within_calibration)))
+    for i in range(len(calibration_frames) - 1):
+        # per scene, we want to know how many calibration detections we find
+        current = calibration_frames[i]
+        next = calibration_frames[i+1]
 
-        print(row['start'])
-        print(row['end'])
-        print('--')
+        # find the amount of GP's between frame CURRENT.end and NEXT.start
+        n = len(calibration_surface[(calibration_surface['frame'] > current['end']) & (calibration_surface['frame'] < next['start'])])
 
-        i = i + 1
+        progress.print('[purple]Found {} gps on ijksurface in scene {}'.format(n, i + 2))
 
+    # TODO: make sure we save this output as well
+
+    # TODO: remove this
     sys.exit()
