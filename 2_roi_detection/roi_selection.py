@@ -55,6 +55,9 @@ def main():
     # Playback the rois for a visual check
     playback_rois(video_name, selected_rois, computed_rois, output_file_name, start_frame)
 
+    # Do we really want to save the video?
+    save_video_confirmation(output_file_name)
+
 # Start the selection process
 def roi_selection(file, start_frame, step, max_frames):
     cap = cv2.VideoCapture(file)
@@ -249,6 +252,7 @@ def generate_file_name(given_label):
     unique_label = given_label + '_' + str(unique_id)
     return 'output/' + unique_label + '.csv'
 
+# Save the csv
 def save_to_csv(output_file_name, computed_rois, start_frame, must_or_may):
     label = output_file_name.replace('output/', '').replace('.csv', '')
     csv_file = output_file_name
@@ -271,6 +275,18 @@ def save_to_csv(output_file_name, computed_rois, start_frame, must_or_may):
     print('\033[0;32m' + '----------------------------')
     print('saving results to ' + output_file_name)
     print('----------------------------' + '\033[0m')
+
+# Remove the csv file if we do not want to save it
+def save_video_confirmation(output_file_name):
+    print("\n");
+    may_save = input("Do you want to save a csv? The default is (Y)es, type n to remove. [Y/n]\n");
+
+    if(may_save.lower() == 'n'):
+        print("Okay, we are removing the file")
+        os.remove(output_file_name);
+    else:
+        print("Okay, done!")
+
 
 if __name__ == "__main__":
     main()
