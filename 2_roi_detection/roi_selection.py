@@ -67,7 +67,7 @@ def roi_selection(file, start_frame, step, max_frames):
 
     selected_rois = {}
 
-    frames = 1
+    frames = 0
     while ok and frames <= max_frames:
         # Resize frame and position the window
         frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
@@ -80,13 +80,13 @@ def roi_selection(file, start_frame, step, max_frames):
 
         # When hitting S, the video will pause and we may select a ROI for that frame
         if key == ord("s") or frames == 1:
-            cv2.putText(frame, "Selecting ROI on frame {} and/or hit [space] to continue.".format(frames), (30, 30), 
+            cv2.putText(frame, "Selecting ROI on frame {} and/or hit [space] to continue.".format(frames - 1), (30, 30), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA);
             
             roiBB = cv2.selectROI('frame', frame, fromCenter=False) 
 
             if not (roiBB[2] == 0 or roiBB[3] == 0): # if no width or height
-                selected_rois[frames] = roiBB;
+                selected_rois[frames - 1] = roiBB;
         else:
             cv2.putText(frame, "Hit [s] to select another ROI or hit [q] to compute & quit.", (30, 30), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA);
@@ -197,6 +197,8 @@ def playback_rois(file, selected_rois, computed_rois, output_file_name, start_fr
         # Draw over the frame
         # this is for drawing the box on the screen
         roiBB = computed_rois[frames]
+        print("Recapping computed rois for frame {}".format(frames))
+
         p1 = (int(roiBB[0]), int(roiBB[1]))
         p2 = (int(roiBB[0] + roiBB[2]), int(roiBB[1] + roiBB[3]))
 
@@ -219,7 +221,7 @@ def playback_rois(file, selected_rois, computed_rois, output_file_name, start_fr
         cv2.imshow('frame', frame)
 
         # Go to next frame
-        time.sleep(.2)
+        time.sleep(.1)
         ok, frame = cap.read();
         frames += 1
 
@@ -286,7 +288,6 @@ def save_video_confirmation(output_file_name):
         os.remove(output_file_name);
     else:
         print("Okay, done!")
-
 
 if __name__ == "__main__":
     main()
