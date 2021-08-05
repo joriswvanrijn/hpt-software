@@ -64,7 +64,7 @@ total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
 # Write video
 out = cv2.VideoWriter(
-        'video_with_labels.mp4',
+        'video_with_labels_and_gaze.mp4',
         cv2.VideoWriter_fourcc(*'XVID'),
         cap.get(cv2.CAP_PROP_FPS),
         (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
@@ -84,6 +84,10 @@ frame_nr = start_frame
 # Capture frame-by-frame 
 while(cap.isOpened()): 
     key = cv2.waitKey(1) & 0xff
+
+        
+    if(frame_nr > start_frame + 40):
+        break
 
     # quit on Q
     if key == ord('q'):
@@ -164,13 +168,13 @@ while(cap.isOpened()):
                 cv2.rectangle(frame, new_p1, new_p2, color2, 2, 1)
 
             # Display the resulting frame
-            frame = ResizeWithAspectRatio(frame, width=FRAME_WIDTH) 
-            cv2.imshow('Frame', frame) 
+            frameToDisplay = ResizeWithAspectRatio(frame, width=FRAME_WIDTH) 
+            cv2.imshow('Frame', frameToDisplay) 
             cv2.moveWindow('Frame', 20, 20)
 
             # Writing the resulting frame
-            # print('saving frame {}/{}'.format(frame_nr, total_frames))
-            # out.write(frame)
+            print('saving frame {}/{}'.format(frame_nr, total_frames))
+            out.write(frame)
     
         # Break the loop 
         else:  

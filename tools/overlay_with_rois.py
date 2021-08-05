@@ -101,9 +101,9 @@ while(cap.isOpened()):
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA);
 
             # Display the resulting frame
-            # frame = ResizeWithAspectRatio(frame, width=1280) 
-            # cv2.imshow('Frame', frame) 
-            # cv2.moveWindow('Frame', 20, 20)
+            frameToDisplay = ResizeWithAspectRatio(frame, width=1280) 
+            cv2.imshow('Frame', frameToDisplay) 
+            cv2.moveWindow('Frame', 20, 20)
 
             # Writing the resulting frame
             print('saving frame {}/{}'.format(frame_nr, total_frames))

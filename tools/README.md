@@ -9,7 +9,7 @@ python3 overlay_with_roi_and_gaze.py --video="../inputs/Validatietaak.mp4" --dat
 ## Overlaying ROIS over a video
 
 ```bash
-python3 overlay_with_rois.py --data '../rois/validatietaak.csv' --video '../videos/Validatietaak.mp4'
+python3 overlay_with_rois.py --data '../rois/validatietaak.csv' --video '../inputs/Validatietaak.mp4'
 ```
 
 **Usage**
