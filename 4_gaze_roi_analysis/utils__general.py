@@ -17,23 +17,25 @@ def show_error(message, progress):
     raise Exception(message)
 
 def ask_for_participant_id():
-    id = console.input("Provide the [bold cyan]participant id[/bold cyan] [i bright_black](default: inputRVR)[/i bright_black]: ") or "inputRVR"
+    id = console.input("Provide the [bold cyan]participant id[/bold cyan] [i bright_black](default: inputYF)[/i bright_black]: ") or "inputYF"
     check_participant_id(id)
     return id
 
-def ask_for_rois_file():
-    file = console.input("Provide the [bold cyan]ROIs file[/bold cyan] [i bright_black](default: validatietaak.csv)[/i bright_black]: ") or "validatietaak.csv"
-    check_rois_file(file)
+def ask_for_rois_id():
+    file = console.input("Provide the [bold cyan]ROIs ID[/bold cyan] [i bright_black](default: validatietaak)[/i bright_black]: ") or "validatietaak"
+    check_rois_files(file)
     return file
 
 def ask_for_starting_task():
     return int(console.input('At [bold cyan]which task[/bold cyan] are we starting? [i bright_black](default: 1)[/i bright_black] ') or "1")
 
-def check_rois_file(file):
+def check_rois_files(file):
     if file == "":
         raise Exception('No ROI file provided')
-    elif not os.path.isfile('../rois/{}'.format(file)):
-        raise Exception('ROIs file for {} not found'.format(file))
+    elif not os.path.isfile('../rois/{}.csv'.format(file)):
+        raise Exception('ROIs file for {}.csv not found'.format(file))
+    elif not os.path.isfile('../calibration/{}.json'.format(file)):
+        raise Exception('calibration file for {}.json not found'.format(file))
 
 def check_participant_id(id):
     if id == "":
@@ -48,9 +50,10 @@ def check_participant_id(id):
 
 def prepare_tasks(progress):
      return [
-        progress.add_task("[cyan]1. Merging gaze positions", total=20),
-        progress.add_task("[cyan]2. Identifying gaps in gaze positions", total=50),
-        progress.add_task("[cyan]3. Identifying hits", total=50),
-        progress.add_task("[cyan]4. Identifying entries and exits", total=50),
-        progress.add_task("[cyan]5. Generating output", total=9),
+        progress.add_task("[cyan]1. Checking ijksurfaces", total=20),
+        progress.add_task("[cyan]2. Merging gaze positions", total=20),
+        progress.add_task("[cyan]3. Identifying gaps in gaze positions", total=50),
+        progress.add_task("[cyan]4. Identifying hits", total=50),
+        progress.add_task("[cyan]5. Identifying entries and exits", total=50),
+        progress.add_task("[cyan]6. Generating output", total=9),
      ]
