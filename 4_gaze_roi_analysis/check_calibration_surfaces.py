@@ -1,6 +1,9 @@
 import __constants
 import pandas as pd
+import numpy as np
 import sys, json
+import matplotlib.pyplot as plt
+from utils__general import show_error
 
 def check_calibration_surfaces(participant_id, calibration_file, progress, task):
 
@@ -23,14 +26,7 @@ def check_calibration_surfaces(participant_id, calibration_file, progress, task)
     # Fetch all entries and exits
     a_file = open(input_file_name, "r")
     calibration_frames = json.loads(a_file.read())
-
-    # progress.print('[yellow]Calibration surface is {} rows long'.format(len(calibration_surface)))
-
-    # for row in calibration_frames:
-    #     progress.print('We are filtering all rows from our calibration surface between {} and {}'.format(row['start'], row['end']))
-    #     calibration_surface = calibration_surface.drop(calibration_surface[(calibration_surface['frame'] < row['end']) & (calibration_surface['frame'] > row['start'])].index)
-
-    # progress.print('[yellow]Calibration surface is {} rows long'.format(len(calibration_surface)))
+    gps_in_scene = []
 
     for i in range(len(calibration_frames) - 1):
         # per scene, we want to know how many calibration detections we find
@@ -40,9 +36,39 @@ def check_calibration_surfaces(participant_id, calibration_file, progress, task)
         # find the amount of GP's between frame CURRENT.end and NEXT.start
         n = len(calibration_surface[(calibration_surface['frame'] > current['end']) & (calibration_surface['frame'] < next['start'])])
 
-        progress.print('[purple]Found {} gps on ijksurface in scene {}'.format(n, i + 2))
+        gps_in_scene.append(n)
 
-    # TODO: make sure we save this output as well
+    progress.print('[purple]Found gps in scenes: {}'.format(gps_in_scene))
+    scenes = list(range(1, len(gps_in_scene) + 1))
 
-    # TODO: remove this
-    sys.exit()
+    # linear regression across points
+    df = pd.DataFrame(data={'gps_in_scene': gps_in_scene, 'scenes': scenes })
+    x = df.scenes
+    y = df.gps_in_scene
+    model = np.polyfit(x, y, 1)
+    predict = np.poly1d(model)
+    
+    # show graph
+    plt.scatter(x,y)
+    x_lin_reg = range(1, len(gps_in_scene) + 1)
+    y_lin_reg = predict(x_lin_reg)
+    model = np.polyfit(x, y, 1)
+    plt.plot(x_lin_reg, y_lin_reg, c = 'r')
+
+    plt.xticks(np.arange(min(x), max(x)+1, 1.0))
+    plt.xlabel('Scene')
+    plt.ylabel('Frames found with ijksurfaces')
+    # plt.show()
+    # sys.exit()
+
+    plt.savefig('../outputs/{}/frames_with_ijksurfaces_found_in_scenes.png'.format(participant_id))
+
+    # regression: ax + b = y
+    a = model[0]
+    b = model[1]
+
+    progress.print('[purple]Found linear regression fit across previous array, with coefficient: {}'.format(a))
+
+    if(a > __constants.max_coef_lin_fit_ijkframes):
+        plt.show()
+        show_error('It seems that that we found more frames with ijksurfaces in scenes than expected...', progress)
