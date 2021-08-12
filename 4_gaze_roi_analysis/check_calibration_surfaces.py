@@ -69,6 +69,6 @@ def check_calibration_surfaces(participant_id, calibration_file, progress, task)
 
     progress.print('[purple]Found linear regression fit across previous array, with coefficient: {}'.format(a))
 
-    if(a > __constants.max_coef_lin_fit_ijkframes):
+    if(abs(a) > __constants.max_coef_lin_fit_ijkframes):
         plt.show()
         show_error('It seems that that we found more frames with ijksurfaces in scenes than expected...', progress)
