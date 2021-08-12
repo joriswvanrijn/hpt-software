@@ -16,7 +16,7 @@ def identify_gaps_in_gaze_positions(participant_id, progress, task):
         show_error('Input file for step 2 is not found. Run step 1 first.', progress)
 
     if not os.path.isfile(input_file_name_blinks):
-        show_error('No blinks.csv found.', progress)
+        show_error('No {} found.'.format(input_file_name_blinks), progress)
 
     df = pd.read_csv(input_file_name)
 
