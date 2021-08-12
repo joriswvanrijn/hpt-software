@@ -16,7 +16,7 @@ def main():
     # parse the arguments used to call this script
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', required=True, help='name of video file', type=str)
-    parser.add_argument('--label', required=True, help='label of tracked object', type=str)
+    # parser.add_argument('--label', required=True, help='label of tracked object', type=str)
     parser.add_argument('--step', help='How many frames to skip in between', type=float, default=40)
     parser.add_argument('--start-frame', help='Starting frame (first = 0)', type=float, default=1)
     parser.add_argument('--max-frames', help='Maximum number of frames processed', type=int, default=10000)
@@ -25,13 +25,44 @@ def main():
     args = parser.parse_args()
     start_frame = args.start_frame
     max_frames = args.max_frames
-    given_label = args.label
+    # given_label = args.label
     video_name = args.name
     step = args.step
+
+    # QUESTIONS
+    # Label?
+    given_label = input("What is the label of the tracked object? ")
+    if(given_label ==  ''):
+        print('invalid input')
+        sys.exit()
 
     # Must or may?
     must_or_may = int(input("Before we start: are you tracking a must or may be seen object? \n 1: must-be-seen, 2: may-be-seen \n"))
     if(must_or_may != 1 and must_or_may != 2):
+        print('invalid input')
+        sys.exit()
+
+    # How many CBR MUST 
+    CBR_MUST = input('How many CBR MUST ? ')
+    if(CBR_MUST == ''):    
+        print('invalid input')
+        sys.exit()
+
+    # How many CBR MAY
+    CBR_MAY = input('How many CBR MAY? ')
+    if(CBR_MAY == ''): 
+        print('invalid input')
+        sys.exit()
+
+    # How many drivers MUST 
+    drivers_MUST = input('How many drivers MUST ? ')
+    if(drivers_MUST == ''):    
+        print('invalid input')
+        sys.exit()
+
+    # How many drivers MAY
+    drivers_MAY = input('How many drivers MAY? ')
+    if(drivers_MAY == ''): 
         print('invalid input')
         sys.exit()
 
@@ -50,7 +81,7 @@ def main():
     computed_rois = compute_transition_rois(selected_rois)
 
     # Save the computed rois to a csv
-    save_to_csv(output_file_name, computed_rois, start_frame, must_or_may)
+    save_to_csv(output_file_name, computed_rois, start_frame, must_or_may, CBR_MUST, CBR_MAY, drivers_MUST, drivers_MAY)
 
     # Playback the rois for a visual check
     playback_rois(video_name, selected_rois, computed_rois, output_file_name, start_frame)
@@ -255,13 +286,13 @@ def generate_file_name(given_label):
     return 'output/' + unique_label + '.csv'
 
 # Save the csv
-def save_to_csv(output_file_name, computed_rois, start_frame, must_or_may):
+def save_to_csv(output_file_name, computed_rois, start_frame, must_or_may, CBR_MUST, CBR_MAY, drivers_MUST, drivers_MAY):
     label = output_file_name.replace('output/', '').replace('.csv', '')
     csv_file = output_file_name
 
     with open(csv_file, 'w', newline='') as write_obj:
         csv_writer = writer(write_obj)
-        csv_writer.writerow(['Frame','Object ID','x1','x2','y1','y2', 'type'])
+        csv_writer.writerow(['Frame','Object ID','x1','x2','y1','y2', 'type', 'CBR_MUST', 'CBR_MAY', 'drivers_MUST', 'drivers_MAY'])
 
         for fnr in computed_rois:
             roi = computed_rois[fnr]
@@ -272,7 +303,12 @@ def save_to_csv(output_file_name, computed_rois, start_frame, must_or_may):
             x2 = int(round(x1 + roi[2]/FRAME_WIDTH * VIDEO_WIDTH))
             y2 = int(round(y1 + roi[3]/FRAME_WIDTH * VIDEO_WIDTH))
 
-            csv_writer.writerow([(fnr + start_frame + 1), label, x1, x2, y1, y2, ('must' if must_or_may == 1 else 'may')])
+            csv_writer.writerow([
+                (fnr + start_frame + 1), 
+                label, x1, x2, y1, y2,
+                ('must' if must_or_may == 1 else 'may'),
+                CBR_MUST, CBR_MAY, drivers_MUST, drivers_MAY
+            ])
     
     print('\033[0;32m' + '----------------------------')
     print('saving results to ' + output_file_name)

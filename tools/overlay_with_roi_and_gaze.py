@@ -85,10 +85,6 @@ frame_nr = start_frame
 while(cap.isOpened()): 
     key = cv2.waitKey(1) & 0xff
 
-        
-    if(frame_nr > start_frame + 40):
-        break
-
     # quit on Q
     if key == ord('q'):
         break
