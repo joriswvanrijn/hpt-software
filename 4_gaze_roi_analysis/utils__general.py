@@ -18,11 +18,10 @@ def show_error(message, progress):
 
 def ask_for_participant_id():
     id = console.input("Provide the [bold cyan]participant id[/bold cyan] [i bright_black](default: inputYF)[/i bright_black]: ") or "inputYF"
-    check_participant_id(id)
     return id
 
-def ask_for_rois_id():
-    file = console.input("Provide the [bold cyan]ROIs ID[/bold cyan] [i bright_black](default: validatietaak)[/i bright_black]: ") or "validatietaak"
+def ask_for_video_id():
+    file = console.input("Provide the [bold cyan]video ID (e.g. Deel 1)[/bold cyan] (for input folder and both ROI & synchronisation file) [i bright_black](default: validatietaak)[/i bright_black]: ") or "validatietaak"
     check_rois_files(file)
     return file
 
@@ -34,10 +33,10 @@ def check_rois_files(file):
         raise Exception('No ROI file provided')
     elif not os.path.isfile('../rois/{}.csv'.format(file)):
         raise Exception('ROIs file for {}.csv not found'.format(file))
-    elif not os.path.isfile('../calibration/{}.json'.format(file)):
+    elif not os.path.isfile('../start_end_frames/synchronisation/{}.json'.format(file)):
         raise Exception('calibration file for {}.json not found'.format(file))
 
-def check_participant_id(id):
+def check_participant_id(id, video_id):
     if id == "":
         raise Exception('No participant ID provided')
     elif not os.path.isdir('../inputs/{}'.format(id)):
@@ -47,6 +46,8 @@ def check_participant_id(id):
         os.mkdir('../outputs'.format(id))
     if not os.path.isdir('../outputs/{}'.format(id)):
         os.mkdir('../outputs/{}'.format(id))
+    if not os.path.isdir('../outputs/{}/{}'.format(id, video_id)):
+        os.mkdir('../outputs/{}/{}'.format(id, video_id))
 
 def prepare_tasks(progress):
      return [

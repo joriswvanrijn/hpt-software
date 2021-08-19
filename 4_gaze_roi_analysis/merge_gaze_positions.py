@@ -2,12 +2,12 @@ import __constants
 import pandas as pd
 import numpy as np 
 
-def merge_gaze_positions(participant_id, progress, task):
+def merge_gaze_positions(participant_id, video_id, progress, task):
     ## Variables
     n_surfaces = 9 # 1 t/m 9
-    surfaces_base_name = '../inputs/{}/gaze_positions_on_surface_Surface{:d}WB.csv'
-    dummy_surface_base_name = '../inputs/{}/gaze_positions_on_surface_dummysurface.csv'
-    output_file_name = '../inputs/{}/merged_surfaces.csv'.format(participant_id)
+    surfaces_base_name = '../inputs/{}/{}/gaze_positions_on_surface_Surface{:d}WB.csv'
+    dummy_surface_base_name = '../inputs/{}/{}/gaze_positions_on_surface_dummysurface.csv'
+    output_file_name = '../inputs/{}/{}/merged_surfaces.csv'.format(participant_id, video_id)
     surfaces = __constants.surfaces
 
     dfs = {}
@@ -15,7 +15,7 @@ def merge_gaze_positions(participant_id, progress, task):
     progress.print('[bold yellow]We are preparing data from each surface.')
 
     for n in range(1, n_surfaces + 1):
-        dfs[n] = pd.read_csv(surfaces_base_name.format(participant_id, n))
+        dfs[n] = pd.read_csv(surfaces_base_name.format(participant_id, video_id, n))
         progress.print('Found {} rows in CSV #{}'.format(len(dfs[n]), n))
 
         # Remove onsurf = False, participant did not look in this surface so no usable x and y coordinates to transform.
@@ -113,7 +113,7 @@ def merge_gaze_positions(participant_id, progress, task):
 
     ## 9. Correct the offset by finding the first gaze_timestamp from the dummy surface and remove everything 
     # before it from the final dataset.
-    dummy_df = pd.read_csv(dummy_surface_base_name.format(participant_id))
+    dummy_df = pd.read_csv(dummy_surface_base_name.format(participant_id, video_id))
     first_gaze_timestamp = dummy_df.iloc[0]['gaze_timestamp']
     final_df = final_df[final_df['gaze_timestamp'] >= first_gaze_timestamp]
     progress.print("We are now fetching the first known gaze timestamp from the dummy surfaces, and removing everything before it")
@@ -131,7 +131,7 @@ def merge_gaze_positions(participant_id, progress, task):
     final_df['on_screen'] = True
 
     # Fetch surface 5 (center)
-    center_surface_df = pd.read_csv(surfaces_base_name.format(participant_id, 5))
+    center_surface_df = pd.read_csv(surfaces_base_name.format(participant_id, video_id, 5))
     # Everything we add may have an on_screen = False
     center_surface_df['on_screen'] = False
 

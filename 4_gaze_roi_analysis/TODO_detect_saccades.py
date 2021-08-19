@@ -1,28 +1,32 @@
+import __constants
 import numpy as np
 from scipy.interpolate import PchipInterpolator
 import pandas as pd
 import numpy.linalg as LA
 import sys
 import matplotlib.pyplot as plt
-from numpy import pi
-from numpy import pi, cos, sin
+from numpy import pi, cos, sin, arctan
+import math
 
-def detect_saccades(participant_id):
+def detect_saccades(participant_id, video_id):
     engbert_lambda = 5
 
     print("[bold yellow]We are starting identifying saccades")
 
     # Read the csv
-    input_file_name = '../outputs/{}/df_gps_x_rois.csv'.format(participant_id)
+    input_file_name = '../outputs/{}/{}/df_gps_x_rois.csv'.format(participant_id, video_id)
     samples = pd.read_csv(input_file_name)
 
     # Interpolate the data 
     # true_x_scaled_SRM, true_y_scaled_SRM
     fs = 240
-    interpgaze = interpolate_gaze(samples, participant_id, fs=fs)
+    interpgaze = interpolate_gaze(samples, participant_id, video_id, fs=fs)
+
+    # calculate x and y in terms of rad
+    interpgaze = gaze_coordinates_to_rad(samples)
 
     # apply the saccade detection algorithm     
-    saccades = apply_engbert_mergenthaler(xy_data=interpgaze[['true_x_scaled_SRM', 'true_y_scaled_SRM']], is_blink=interpgaze['is_blink'], vel_data=None, sample_rate=fs, l=engbert_lambda)
+    saccades = apply_engbert_mergenthaler(xy_data=interpgaze[['x_rad', 'y_rad']], is_blink=interpgaze['is_blink'], vel_data=None, sample_rate=fs, l=engbert_lambda)
 
     # convert samples of data back to sample time
     for fn in ['raw_start_time', 'raw_end_time', 'expanded_start_time', 'expanded_end_time']:
@@ -31,12 +35,12 @@ def detect_saccades(participant_id):
     # print(saccades.head(10))
 
     # Save saccades to csv
-    output_file_name = '../outputs/{}/saccades.csv'.format(participant_id)
+    output_file_name = '../outputs/{}/{}/saccades.csv'.format(participant_id, video_id)
     saccades.to_csv(output_file_name)
 
     # return saccades
 
-def interpolate_gaze(samples, participant_id, fs=None):
+def interpolate_gaze(samples, participant_id, video_id, fs=None):
     print("[bold yellow]We are starting to interpolate gaze data")
 
     samples['true_x_scaled_SRM'].fillna(0, inplace=True)
@@ -60,7 +64,7 @@ def interpolate_gaze(samples, participant_id, fs=None):
     gazeInt.loc[:, 'true_y_scaled_SRM'] = interp(samples.actual_time, samples.true_y_scaled_SRM)
     gazeInt.loc[:, 'is_blink'] = interp(samples.actual_time, samples.is_blink)
 
-    output_file_name = '../outputs/{}/interpolated_gazedata.csv'.format(participant_id)
+    output_file_name = '../outputs/{}/{}/interpolated_gazedata.csv'.format(participant_id, video_id)
     gazeInt.to_csv(output_file_name)
 
     # actual_time, true_x_scaled_SRM, true_y_scaled_SRM
@@ -316,4 +320,17 @@ def sph2cart(theta_sph, phi_sph, rho_sph=1):
 
     return xyz_sph
 
-detect_saccades('inputRVR')
+def gaze_coordinates_to_rad(samples):
+    samples['x_rad'] = arctan(samples['true_x_scaled_SRM'] / __constants.distance_to_screen_px)
+    samples['y_rad'] = arctan(samples['true_y_scaled_SRM'] / __constants.distance_to_screen_px)
+
+    output_file_name = '../outputs/{}/temporary.csv'.format('inputRVR')
+    samples.to_csv(output_file_name)
+
+    # plt.plot(samples.actual_time, samples.true_x_scaled_SRM, 'r')
+    # plt.plot(samples.actual_time, samples.x_rad * 1000, 'g')
+    # plt.show()
+    
+    return samples
+
+detect_saccades('inputRVR', 'validatietaak')

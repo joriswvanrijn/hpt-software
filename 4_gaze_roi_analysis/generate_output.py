@@ -19,14 +19,14 @@ def squeeze_nan(x):
     squeezed.index = [original_columns[n] for n in range(squeezed.count())]
     return squeezed.reindex(original_columns, fill_value=np.nan)
 
-def generate_output(participant_id, rois_file, progress, task):
+def generate_output(participant_id, video_id, rois_file, progress, task):
     progress.print("[bold yellow]We are starting generating output")
 
-    input_file_name = '../outputs/{}/entries_exits.json'.format(participant_id)
+    input_file_name = '../outputs/{}/{}/entries_exits.json'.format(participant_id, video_id)
     if not os.path.isfile(input_file_name):
         show_error('Input file for step 5 is not found. Run step 4 first.', progress)
 
-    input_file_name_gps_x_rois = '../outputs/{}/df_gps_x_rois.csv'.format(participant_id)
+    input_file_name_gps_x_rois = '../outputs/{}/{}/df_gps_x_rois.csv'.format(participant_id, video_id)
     if not os.path.isfile(input_file_name):
         show_error('Input file for step 5 is not found. Run step 3 first.', progress)
 
@@ -230,7 +230,7 @@ def generate_output(participant_id, rois_file, progress, task):
 
     # Write to csv
     d = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
-    output_file_name = '../outputs/{}/{}_output_{}.csv'.format(participant_id, participant_id, d)
+    output_file_name = '../outputs/{}/{}/{}_output_{}.csv'.format(participant_id, video_id, participant_id, d)
     df_w.to_csv(output_file_name)
 
     progress.print("[green bold]Saved output to {}".format(output_file_name))

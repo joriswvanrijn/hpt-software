@@ -112,7 +112,7 @@ while(cap.isOpened()):
             for index, gaze_position in gaze_position_overlays.iterrows():
                 if not math.isnan(gaze_position['true_x_scaled_SRM']) and not math.isnan(gaze_position['true_y_scaled_SRM']):
                     x = gaze_position['true_x_scaled'] + __constants.total_surface_width/2
-                    y = 1200 - (gaze_position['true_y_scaled'] + __constants.total_surface_height/2)
+                    y = 1200 - (gaze_position['true_y_scaled'] + __constants.total_surface_height/2) # change back to "old" coordinate system
 
                     # print('x: {}, y: {}'.format(x,y))
 
@@ -135,7 +135,7 @@ while(cap.isOpened()):
                 y2 = overlay['y2'] + __constants.total_surface_height/2
                 x1 = overlay['x1'] + __constants.total_surface_width/2
                 x2 = overlay['x2'] + __constants.total_surface_width/2
-                y1 = 1200-y1 # Inverse the y coordinates to match with pupil labs data
+                y1 = 1200-y1 # Inverse the y coordinates to match with "old" coordinate system
                 y2 = 1200-y2 
 
                 if 'type' in overlay and overlay['type'] == 'may':

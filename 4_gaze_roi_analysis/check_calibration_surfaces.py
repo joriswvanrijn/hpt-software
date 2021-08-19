@@ -5,14 +5,14 @@ import sys, json
 import matplotlib.pyplot as plt
 from utils__general import show_error
 
-def check_calibration_surfaces(participant_id, calibration_file, progress, task):
+def check_calibration_surfaces(participant_id, video_id, calibration_file, progress, task):
 
     # Open surface gaze data
-    calibration_surface_name = '../inputs/{}/gaze_positions_on_surface_ijksurface.csv'.format(participant_id)
+    calibration_surface_name = '../inputs/{}/{}/gaze_positions_on_surface_ijksurface.csv'.format(participant_id, video_id)
     calibration_surface = pd.read_csv(calibration_surface_name)
 
     # Open the dummy surface
-    dummy_surface_name = '../inputs/{}/gaze_positions_on_surface_dummysurface.csv'.format(participant_id)
+    dummy_surface_name = '../inputs/{}/{}/gaze_positions_on_surface_dummysurface.csv'.format(participant_id, video_id)
     dummy_surface = pd.read_csv(dummy_surface_name)
 
     # Correct the timestamps in calibration_surface
@@ -21,7 +21,7 @@ def check_calibration_surfaces(participant_id, calibration_file, progress, task)
     calibration_surface['frame'] = calibration_surface['gaze_timestamp'] * 25
 
     # Fetch expected frame numbers of the calibration surfaces
-    input_file_name = '../calibration/{}'.format(calibration_file)
+    input_file_name = '../start_end_frames/synchronisation/{}'.format(calibration_file)
 
     # Fetch all entries and exits
     a_file = open(input_file_name, "r")
@@ -61,7 +61,7 @@ def check_calibration_surfaces(participant_id, calibration_file, progress, task)
     # plt.show()
     # sys.exit()
 
-    plt.savefig('../outputs/{}/frames_with_ijksurfaces_found_in_scenes.png'.format(participant_id))
+    plt.savefig('../outputs/{}/{}/frames_with_ijksurfaces_found_in_scenes.png'.format(participant_id, video_id))
 
     # regression: ax + b = y
     a = model[0]

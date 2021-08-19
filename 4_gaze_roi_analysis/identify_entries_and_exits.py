@@ -5,10 +5,10 @@ from utils__general import show_error
 import os.path
 import json
 
-def identify_entries_and_exits(participant_id, rois_file, progress, task):
+def identify_entries_and_exits(participant_id, video_id, rois_file, progress, task):
     progress.print("[bold yellow]We are starting identifying entries and exits")
 
-    input_file_name = '../outputs/{}/df_gps_x_rois.csv'.format(participant_id)
+    input_file_name = '../outputs/{}/{}/df_gps_x_rois.csv'.format(participant_id, video_id)
     if not os.path.isfile(input_file_name):
         show_error('Input file for step 4 is not found. Run step 3 first.', progress)
 
@@ -53,7 +53,7 @@ def identify_entries_and_exits(participant_id, rois_file, progress, task):
     
     progress.advance(task)
 
-    entries_exits_file = '../outputs/{}/entries_exits.json'.format(participant_id)
+    entries_exits_file = '../outputs/{}/{}/entries_exits.json'.format(participant_id, video_id)
 
     file_handle = open(entries_exits_file, "w")
     json.dump(entries_and_exits, file_handle)

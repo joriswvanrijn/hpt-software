@@ -6,7 +6,7 @@ import numpy as np
 from utils__general import show_error
 import os.path
 
-def identify_hits(participant_id, rois_file, progress, task):
+def identify_hits(participant_id, video_id, rois_file, progress, task):
     progress.print("[bold yellow]We are starting identifying hits")
 
     # Perpare ROI's
@@ -14,7 +14,7 @@ def identify_hits(participant_id, rois_file, progress, task):
     df_rois = prepare_aois_df(df_rois)
 
     # Check if our input file exists
-    input_file_name = '../inputs/{}/merged_surfaces_with_gaps.csv'.format(participant_id)
+    input_file_name = '../inputs/{}/{}/merged_surfaces_with_gaps.csv'.format(participant_id, video_id)
     if not os.path.isfile(input_file_name):
         show_error('Input file for step 3 is not found. Run step 2 first.', progress)
 
@@ -52,9 +52,10 @@ def identify_hits(participant_id, rois_file, progress, task):
     df_gps_x_rois['actual_time'] = df_gps['actual_time']
     df_gps_x_rois['frame'] = df_gps['frame']
     df_gps_x_rois['true_x_scaled'] = df_gps['true_x_scaled']
-    df_gps_x_rois['true_y_scaled'] = 1200 - df_gps['true_y_scaled']
+    df_gps_x_rois['true_y_scaled'] = df_gps['true_y_scaled']
     df_gps_x_rois['true_x_scaled_SRM'] = df_gps['true_x_scaled_SRM']
-    df_gps_x_rois['true_y_scaled_SRM'] = 1200 - df_gps['true_y_scaled_SRM']
+    df_gps_x_rois['true_y_scaled_SRM_for_hit_calculation'] = 1200 - df_gps['true_y_scaled_SRM']
+    df_gps_x_rois['true_y_scaled_SRM'] = df_gps['true_y_scaled_SRM']
     df_gps_x_rois['confidence'] = df_gps['confidence']
     df_gps_x_rois['surface'] = df_gps['surface_no']
     df_gps_x_rois['is_valid_gap'] = df_gps['is_valid_gap']
@@ -66,7 +67,7 @@ def identify_hits(participant_id, rois_file, progress, task):
     zeros = np.zeros(shape=(len(df_gps_x_rois),len(new_cols)))
     df_gps_x_rois[new_cols] = pd.DataFrame(zeros, columns=new_cols)
 
-    df_gps_x_rois.to_csv('../outputs/{}/df_gps_x_rois.csv'.format(participant_id))
+    df_gps_x_rois.to_csv('../outputs/{}/{}/df_gps_x_rois.csv'.format(participant_id, video_id))
 
     progress.print('We saved a preliminary df_gps_x_rois (with all hits to 0)')
     progress.update(task, total=(len(df_gps_x_rois)-1))
@@ -102,8 +103,7 @@ def identify_hits(participant_id, rois_file, progress, task):
             x1, x2, y1, y2 = correct_aoi(x1, x2, y1, y2, angle)
 
             # Simple is "hit"
-            # is_hit = ((x1 < gp['true_x_scaled'] < x2) and (y1 < gp['true_y_scaled'] < y2))
-            is_hit = ((x1 < gp['true_x_scaled_SRM'] < x2) and (y1 < gp['true_y_scaled_SRM'] < y2))
+            is_hit = ((x1 < gp['true_x_scaled_SRM'] < x2) and (y1 < gp['true_y_scaled_SRM_for_hit_calculation'] < y2))
 
             if(is_hit):
                 # Change the zero to one if needed
@@ -111,6 +111,6 @@ def identify_hits(participant_id, rois_file, progress, task):
 
     progress.print('Done with iterating over all rows, now saving the file')
     progress.print('[bold green]Done! We saved df_gps_x_rois.csv with {} rows'.format(len(df_gps_x_rois)))
-    df_gps_x_rois.to_csv('../outputs/{}/df_gps_x_rois.csv'.format(participant_id))
+    df_gps_x_rois.to_csv('../outputs/{}/{}/df_gps_x_rois.csv'.format(participant_id, video_id))
 
     progress.advance(task)
