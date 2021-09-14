@@ -154,7 +154,7 @@ while ok and frames <= max_frames and may_play:
     # if the 's' key is selected, we are going to "select" a bounding
     # box to track
     if key == ord("s") or frames == 1 or frame_diff > thresh:
-        trackers = cv2.MultiTracker_create()
+        trackers = cv2.legacy.MultiTracker_create()
         for i in range(max_obj):
             # select the bounding box of the object we want to track (make
             # sure you press ENTER or SPACE after selecting the ROI)
@@ -164,7 +164,7 @@ while ok and frames <= max_frames and may_play:
             if initBB[2] == 0 or initBB[3] == 0: # if no width or height
                 break
             # # start OpenCV object tracker using the supplied bounding box
-            tracker = cv2.TrackerCSRT_create()
+            tracker = cv2.legacy.TrackerCSRT_create()
             trackers.add(tracker, frame, initBB)
 
     if initBB is not None:
