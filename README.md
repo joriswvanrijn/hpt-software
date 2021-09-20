@@ -1,4 +1,4 @@
-# 👀 HPT software
+# 👀 Treyescan
 
 ## Notes
 

@@ -40,6 +40,12 @@ if(given_label ==  ''):
     print('invalid input')
     sys.exit()
 
+# What is the category?
+category = input('What is the category? ')
+if(category == ''): 
+    print('invalid input')
+    sys.exit()
+
 # Must or may?
 must_or_may = int(input("Before we start: are you tracking a must or may be seen object? \n 1: must-be-seen, 2: may-be-seen \n"))
 if(must_or_may != 1 and must_or_may != 2):
@@ -101,7 +107,7 @@ video = cv2.VideoCapture(args.name) # Read video
 csv_file = output_file_name
 with open(csv_file, 'w', newline='') as write_obj:
     csv_writer = writer(write_obj)
-    csv_writer.writerow(['Frame','Object ID','x1','x2','y1','y2', 'type', 'CBR_MUST', 'CBR_MAY', 'drivers_MUST', 'drivers_MAY'])
+    csv_writer.writerow(['Frame','Object ID', 'category', 'x1','x2','y1','y2', 'type', 'CBR_MUST', 'CBR_MAY', 'drivers_MUST', 'drivers_MAY'])
 
 print('\033[0;32m' + '----------------------------')
 print('saving results to ' + output_file_name)
@@ -203,7 +209,7 @@ while ok and frames <= max_frames and may_play:
                         csv_writer = writer(write_obj)
                         csv_writer.writerow([                   
                                             (frames + start_frame),         
-                                            unique_label,   
+                                            unique_label, category,
                                             x1, x2, y1, y2, ('must' if must_or_may == 1 else 'may'),
                                             CBR_MUST, CBR_MAY, drivers_MUST, drivers_MAY
                                         ])
