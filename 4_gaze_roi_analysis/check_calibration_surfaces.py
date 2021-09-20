@@ -4,8 +4,9 @@ import numpy as np
 import sys, json
 import matplotlib.pyplot as plt
 from utils__general import show_error
+from rich.prompt import Confirm
 
-def check_calibration_surfaces(participant_id, video_id, calibration_file, progress, task):
+def check_calibration_surfaces(participant_id, video_id, calibration_file, console):
 
     # Open surface gaze data
     calibration_surface_name = '../inputs/{}/{}/gaze_positions_on_surface_ijksurface.csv'.format(participant_id, video_id)
@@ -38,7 +39,7 @@ def check_calibration_surfaces(participant_id, video_id, calibration_file, progr
 
         gps_in_scene.append(n)
 
-    progress.print('[purple]Found gps in scenes: {}'.format(gps_in_scene))
+    console.print('[purple]Found gps in scenes: {}'.format(gps_in_scene))
     scenes = list(range(1, len(gps_in_scene) + 1))
 
     # linear regression across points
@@ -67,8 +68,6 @@ def check_calibration_surfaces(participant_id, video_id, calibration_file, progr
     a = model[0]
     b = model[1]
 
-    progress.print('[purple]Found linear regression fit across previous array, with coefficient: {}'.format(a))
-
-    if(abs(a) > __constants.max_coef_lin_fit_ijkframes):
-        plt.show()
-        show_error('It seems that that we found more frames with ijksurfaces in scenes than expected...', progress)
+    console.print('[purple]Found linear regression fit across previous array, with coefficient: {}'.format(a))
+    
+    plt.show()
