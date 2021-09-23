@@ -8,13 +8,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--video', help='path of video file', type=str)
 parser.add_argument('--data', help='path of the csv file', type=str)
 parser.add_argument('--offset', help='offset of the frames in the data set', type=int, default=0)
+parser.add_argument('--start_frame', help='start playing at frame', type=int, default=0)
 
 args = parser.parse_args()
 video_path = args.video
 data_path = args.data
 offset = args.offset
-# start_frame = args.start_frame - 1
-start_frame = 0
+start_frame = args.start_frame - 1
+# start_frame = 0
 
 def ResizeWithAspectRatio(image, width=None, height=None, inter=cv2.INTER_AREA):
     dim = None
