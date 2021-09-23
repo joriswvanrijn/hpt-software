@@ -81,6 +81,9 @@ paused = False
 # Read until video is completed 
 frame_nr = start_frame
 
+# Drop everything with conf below 0.8 and copy to new df
+df_gp_2 = df_gp[df_gp['confidence'] > 0.8]
+
 # Capture frame-by-frame 
 while(cap.isOpened()): 
     key = cv2.waitKey(1) & 0xff
@@ -104,19 +107,31 @@ while(cap.isOpened()):
             actual_time  = frame_nr / 25
             # print('considering frame {} -> actual time: {}'.format(frame_nr, actual_time))
 
-            marge = 0.01
-            # gaze_position_overlays = df_gp[(df_gp['actual_time'] < actual_time + marge) & (df_gp['actual_time'] > actual_time - marge)]
+            # Draw first GPs
             gaze_position_overlays = df_gp[df_gp['frame'] == frame_nr]
             print('found {} gaze positions around frame {}'.format(len(gaze_position_overlays), frame_nr))
 
             for index, gaze_position in gaze_position_overlays.iterrows():
-                if not math.isnan(gaze_position['true_x_scaled_SRM']) and not math.isnan(gaze_position['true_y_scaled_SRM']):
+                if not math.isnan(gaze_position['true_x_scaled']) and not math.isnan(gaze_position['true_y_scaled']):
                     x = gaze_position['true_x_scaled'] + __constants.total_surface_width/2
                     y = 1200 - (gaze_position['true_y_scaled'] + __constants.total_surface_height/2) # change back to "old" coordinate system
 
                     # print('x: {}, y: {}'.format(x,y))
 
                     cv2.circle(frame, (int(x), int(y)), 20, (161, 254, 141), -1)
+
+            # Draw second GPs  
+            gaze_position_overlays = df_gp_2[df_gp_2['frame'] == frame_nr]
+            print('found {} gaze positions around frame {}'.format(len(gaze_position_overlays), frame_nr))
+
+            for index, gaze_position in gaze_position_overlays.iterrows():
+                if not math.isnan(gaze_position['true_x_scaled']) and not math.isnan(gaze_position['true_y_scaled']):
+                    x = gaze_position['true_x_scaled'] + __constants.total_surface_width/2
+                    y = 1200 - (gaze_position['true_y_scaled'] + __constants.total_surface_height/2) # change back to "old" coordinate system
+
+                    # print('x: {}, y: {}'.format(x,y))
+
+                    cv2.circle(frame, (int(x), int(y)), 10, (0, 0, 255), -1)
 
             # print('considering frame {}'.format(frame_nr))
             # print('found {} overlay(s) in data frame'.format(len(overlays)))
@@ -171,6 +186,8 @@ while(cap.isOpened()):
             # Writing the resulting frame
             print('saving frame {}/{}'.format(frame_nr, total_frames))
             out.write(frame)
+
+            time.sleep(.5)
     
         # Break the loop 
         else:  
