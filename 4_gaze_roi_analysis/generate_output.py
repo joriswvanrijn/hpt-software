@@ -76,8 +76,10 @@ def generate_output(participant_id, video_id, rois_file, progress, task):
 
     # First entry time
     for index, row in df.iterrows():
-        first_entry_time = entries_and_exits[row['object_id']][0]
-        df.iloc[index, df.columns.get_loc('first_entry_time')] = first_entry_time
+        ee = entries_and_exits[row['object_id']]
+        if(len(ee) > 0):
+            first_entry_time = ee[0]
+            df.iloc[index, df.columns.get_loc('first_entry_time')] = first_entry_time
 
     # Time to first entry
     df['time_to_first_entry'] = df['first_entry_time'] - df['first_appearance_time']
