@@ -180,6 +180,9 @@ while(cap.isOpened()):
 
             # Display the resulting frame
             frameToDisplay = ResizeWithAspectRatio(frame, width=FRAME_WIDTH) 
+
+
+            # comment  this for faster export            
             cv2.imshow('Frame', frameToDisplay) 
             cv2.moveWindow('Frame', 20, 20)
 
@@ -187,7 +190,7 @@ while(cap.isOpened()):
             print('saving frame {}/{}'.format(frame_nr, total_frames))
             out.write(frame)
 
-            time.sleep(.5)
+            # time.sleep(.5)
     
         # Break the loop 
         else:  
