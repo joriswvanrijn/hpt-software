@@ -9,11 +9,13 @@ from rich.prompt import Confirm
 def check_calibration_surfaces(participant_id, video_id, calibration_file, console):
 
     # Open surface gaze data
-    calibration_surface_name = '../inputs/{}/{}/gaze_positions_on_surface_ijksurface.csv'.format(participant_id, video_id)
+    calibration_surface_name = '{}/{}/{}/gaze_positions_on_surface_ijksurface.csv'.format(
+        __constants.input_folder, participant_id, video_id)
     calibration_surface = pd.read_csv(calibration_surface_name)
 
     # Open the dummy surface
-    dummy_surface_name = '../inputs/{}/{}/gaze_positions_on_surface_dummysurface.csv'.format(participant_id, video_id)
+    dummy_surface_name = '{}/{}/{}/gaze_positions_on_surface_dummysurface.csv'.format(
+        __constants.input_folder, participant_id, video_id)
     dummy_surface = pd.read_csv(dummy_surface_name)
 
     # Correct the timestamps in calibration_surface

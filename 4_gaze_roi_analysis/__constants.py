@@ -1,3 +1,6 @@
+## Input folder
+input_folder = '/Users/joris/Development/HPT/hpt-software/inputs' # path on joris machine
+
 ## Maxmimum coefficient of linear fit on ijkframes_found per scene
 max_coef_lin_fit_ijkframes = 0.3
 

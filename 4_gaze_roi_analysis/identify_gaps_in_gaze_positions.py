@@ -7,9 +7,12 @@ import statistics
 import os.path
 
 def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
-    input_file_name = '../inputs/{}/{}/merged_surfaces.csv'.format(participant_id, video_id)
-    output_file_name = '../inputs/{}/{}/merged_surfaces_with_gaps.csv'.format(participant_id, video_id)
-    input_file_name_blinks = '../inputs/{}/{}/blinks.csv'.format(participant_id, video_id)
+    input_file_name = '{}/{}/{}/merged_surfaces.csv'.format(
+        __constants.input_folder, participant_id, video_id)
+    output_file_name = '{}/{}/{}/merged_surfaces_with_gaps.csv'.format(
+        __constants.input_folder, participant_id, video_id)
+    input_file_name_blinks = '{}/{}/{}/blinks.csv'.format(
+        __constants.input_folder, participant_id, video_id)
 
     # Check if our input file exists
     if not os.path.isfile(input_file_name):

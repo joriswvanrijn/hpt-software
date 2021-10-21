@@ -1,3 +1,4 @@
+import __constants
 from genericpath import isdir
 from os import mkdir
 from utils__console import console
@@ -39,7 +40,7 @@ def check_rois_files(file):
 def check_participant_id(id, video_id):
     if id == "":
         raise Exception('No participant ID provided')
-    elif not os.path.isdir('../inputs/{}'.format(id)):
+    elif not os.path.isdir('{}/{}'.format(__constants.input_folder, id)):
         raise Exception('Input folder for participant {} not found'.format(id))
 
     if not os.path.isdir('../outputs'.format(id)):
