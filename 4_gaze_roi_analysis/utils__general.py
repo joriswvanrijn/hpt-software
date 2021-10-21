@@ -54,7 +54,7 @@ def prepare_tasks(progress):
      return [
         # progress.add_task("[cyan]1. Checking ijksurfaces", total=20),
         progress.add_task("[cyan]2. Merging gaze positions", total=20),
-        progress.add_task("[cyan]3. Identifying gaps in gaze positions", total=50),
+        progress.add_task("[cyan]3. Identifying gaps in gaze positions", total=1),
         progress.add_task("[cyan]4. Identifying hits", total=50),
         progress.add_task("[cyan]5. Identifying entries and exits", total=50),
         progress.add_task("[cyan]6. Generating output", total=9),

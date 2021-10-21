@@ -31,11 +31,11 @@ console.print("[bold yellow]Starting analysis for participant \"{}/{}\" at task 
 
 #### 1) Check ijk surfaces (calibration surfaces) on expected moments
 console.print("[cyan]1. Checking ijksurfaces")
+
 if(starting_task == 1):
     check_calibration_surfaces(participant_id, video_id, '{}.json'.format(video_id), console)
-
-if(not Confirm.ask("May we continue?")):
-    show_error('Aborted by user')
+    if(not Confirm.ask("May we continue?")):
+        show_error('Aborted by user')
 
 with progress_instance as progress:
 

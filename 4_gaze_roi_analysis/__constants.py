@@ -5,7 +5,7 @@ input_folder = '/Users/joris/Development/HPT/hpt-software/inputs' # path on jori
 max_coef_lin_fit_ijkframes = 0.3
 
 ## Identifying gaps
-confidence_treshold = .5 # in %
+confidence_treshold = 0.8 #
 
 ## Calculating AOI hits
 distance_to_screen = 65.06 # in cm 

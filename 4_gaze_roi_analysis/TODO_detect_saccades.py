@@ -18,7 +18,6 @@ def detect_saccades(participant_id, video_id):
     samples = pd.read_csv(input_file_name)
 
     # Interpolate the data 
-    # true_x_scaled_SRM, true_y_scaled_SRM
     fs = 240
     interpgaze = interpolate_gaze(samples, participant_id, video_id, fs=fs)
 
@@ -43,8 +42,8 @@ def detect_saccades(participant_id, video_id):
 def interpolate_gaze(samples, participant_id, video_id, fs=None):
     print("[bold yellow]We are starting to interpolate gaze data")
 
-    samples['true_x_scaled_SRM'].fillna(0, inplace=True)
-    samples['true_y_scaled_SRM'].fillna(0, inplace=True)
+    samples['true_x_scaled'].fillna(0, inplace=True)
+    samples['true_y_scaled'].fillna(0, inplace=True)
 
     # find the time range
     fromT = samples.actual_time.iloc[0]  # find the first sample
@@ -60,23 +59,23 @@ def interpolate_gaze(samples, participant_id, video_id, fs=None):
     gazeInt = pd.DataFrame()
     gazeInt.loc[:, 'actual_time'] = timeIX
 
-    gazeInt.loc[:, 'true_x_scaled_SRM'] = interp(samples.actual_time, samples.true_x_scaled_SRM)
-    gazeInt.loc[:, 'true_y_scaled_SRM'] = interp(samples.actual_time, samples.true_y_scaled_SRM)
+    gazeInt.loc[:, 'true_x_scaled'] = interp(samples.actual_time, samples.true_x_scaled)
+    gazeInt.loc[:, 'true_y_scaled'] = interp(samples.actual_time, samples.true_y_scaled)
     gazeInt.loc[:, 'is_blink'] = interp(samples.actual_time, samples.is_blink)
 
     output_file_name = '../outputs/{}/{}/interpolated_gazedata.csv'.format(participant_id, video_id)
     gazeInt.to_csv(output_file_name)
 
-    # actual_time, true_x_scaled_SRM, true_y_scaled_SRM
+    # actual_time, true_x_scaled, true_y_scaled
     # samples x
     # gazeInt
 
-    # plt.plot(samples.actual_time, samples.true_x_scaled_SRM, 'r')
-    # plt.plot(gazeInt.actual_time, gazeInt.true_x_scaled_SRM, 'g')
+    # plt.plot(samples.actual_time, samples.true_x_scaled, 'r')
+    # plt.plot(gazeInt.actual_time, gazeInt.true_x_scaled, 'g')
     # plt.show()
 
-    # plt.plot(samples.actual_time, samples.true_y_scaled_SRM, 'r')
-    # plt.plot(gazeInt.actual_time, gazeInt.true_y_scaled_SRM, 'g')
+    # plt.plot(samples.actual_time, samples.true_y_scaled, 'r')
+    # plt.plot(gazeInt.actual_time, gazeInt.true_y_scaled, 'g')
     # plt.show()
 
     return gazeInt
@@ -321,13 +320,13 @@ def sph2cart(theta_sph, phi_sph, rho_sph=1):
     return xyz_sph
 
 def gaze_coordinates_to_rad(samples):
-    samples['x_rad'] = arctan(samples['true_x_scaled_SRM'] / __constants.distance_to_screen_px)
-    samples['y_rad'] = arctan(samples['true_y_scaled_SRM'] / __constants.distance_to_screen_px)
+    samples['x_rad'] = arctan(samples['true_x_scaled'] / __constants.distance_to_screen_px)
+    samples['y_rad'] = arctan(samples['true_y_scaled'] / __constants.distance_to_screen_px)
 
     output_file_name = '../outputs/{}/temporary.csv'.format('inputRVR')
     samples.to_csv(output_file_name)
 
-    # plt.plot(samples.actual_time, samples.true_x_scaled_SRM, 'r')
+    # plt.plot(samples.actual_time, samples.true_x_scaled, 'r')
     # plt.plot(samples.actual_time, samples.x_rad * 1000, 'g')
     # plt.show()
     

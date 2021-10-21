@@ -54,13 +54,9 @@ def identify_hits(participant_id, video_id, rois_file, progress, task):
     df_gps_x_rois['frame'] = df_gps['frame']
     df_gps_x_rois['true_x_scaled'] = df_gps['true_x_scaled']
     df_gps_x_rois['true_y_scaled'] = df_gps['true_y_scaled']
-    df_gps_x_rois['true_x_scaled_SRM'] = df_gps['true_x_scaled_SRM']
-    df_gps_x_rois['true_y_scaled_SRM_for_hit_calculation'] = 1200 - df_gps['true_y_scaled_SRM']
-    df_gps_x_rois['true_y_scaled_SRM'] = df_gps['true_y_scaled_SRM']
+    df_gps_x_rois['true_y_scaled_for_hit_calculation'] = 1200 - df_gps['true_y_scaled']
     df_gps_x_rois['confidence'] = df_gps['confidence']
     df_gps_x_rois['surface'] = df_gps['surface_no']
-    df_gps_x_rois['is_valid_gap'] = df_gps['is_valid_gap']
-    df_gps_x_rois['is_blink'] = df_gps['is_blink']
 
     new_cols = df_rois['Object ID'].unique().reshape(1, -1)[0]
     # df_gps_x_rois[new_cols] = np.zeros([len(new_cols), len(df_gps_x_rois)])
@@ -104,7 +100,7 @@ def identify_hits(participant_id, video_id, rois_file, progress, task):
             x1, x2, y1, y2 = correct_aoi(x1, x2, y1, y2, angle)
 
             # Simple is "hit"
-            is_hit = ((x1 < gp['true_x_scaled_SRM'] < x2) and (y1 < gp['true_y_scaled_SRM_for_hit_calculation'] < y2))
+            is_hit = ((x1 < gp['true_x_scaled'] < x2) and (y1 < gp['true_y_scaled_for_hit_calculation'] < y2))
 
             if(is_hit):
                 # Change the zero to one if needed
