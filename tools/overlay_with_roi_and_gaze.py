@@ -15,16 +15,19 @@ FRAME_WIDTH = int(2880 * 0.4)
 parser = argparse.ArgumentParser()
 parser.add_argument('--video', help='path of video file', type=str)
 parser.add_argument('--data', help='path of the ROI csv file', type=str)
-parser.add_argument('--gazedata', help='path of the GAZE POSITION csv file', type=str)
+parser.add_argument('--participant', help='path of the participant data files', type=str)
 parser.add_argument('--offset', help='offset of the frames in the data set', type=int, default=0)
 parser.add_argument('--start_frame', help='start playing at frame', type=int, default=0)
 
 args = parser.parse_args()
 video_path = args.video
 data_path = args.data # ROI data
-gaze_data_path = args.gazedata # Gaze data
+participant_folder = args.participant
 offset = args.offset
 start_frame = args.start_frame - 1
+
+gaze_data_path = '{}/merged_surfaces_with_gaps.csv'.format(participant_folder)
+annotations_data_path = '{}/annotations.csv'.format(participant_folder)
 
 def ResizeWithAspectRatio(image, width=None, height=None, inter=cv2.INTER_AREA):
     dim = None
@@ -44,18 +47,26 @@ def ResizeWithAspectRatio(image, width=None, height=None, inter=cv2.INTER_AREA):
 # Read data file
 df = pd.read_csv(data_path, header=0)
 df_gp = pd.read_csv(gaze_data_path, header=0)
+df_a = pd.read_csv(annotations_data_path, header=0)
 
 # Prepare data
 df = prepare_aois_df(df)
 
 if df_gp['gaze_timestamp'][0] < 0:
     df_gp['actual_time'] = df_gp['gaze_timestamp'] + abs(df_gp.loc[0, 'gaze_timestamp'])
-    df_gp['frame'] = df_gp['actual_time']*25 + 0.00001
-    df_gp['frame'] = df_gp['frame'].astype(int)
+    df_a['actual_time'] = df_a['timestamp'] + abs(df_gp.loc[0, 'gaze_timestamp'])
 else:
     df_gp['actual_time'] = df_gp['gaze_timestamp'] - abs(df_gp.loc[0, 'gaze_timestamp'])
-    df_gp['frame'] = df_gp['actual_time']*25 + 0.00001
-    df_gp['frame'] = df_gp['frame'].astype(int)
+    df_a['actual_time'] = df_a['timestamp'] - abs(df_gp.loc[0, 'gaze_timestamp'])
+
+df_gp['frame'] = df_gp['actual_time']*25 + 0.00001
+df_gp['frame'] = df_gp['frame'].astype(int)
+
+df_a['frame'] = df_a['actual_time']*25 + 0.00001
+df_a['frame'] = df_a['frame'].astype(int)
+
+# print(df_a.head())
+# sys.exit()
 
 # Read video
 cap = cv2.VideoCapture(video_path)
@@ -81,9 +92,6 @@ paused = False
 # Read until video is completed 
 frame_nr = start_frame
 
-# Drop everything with conf below 0.8 and copy to new df
-df_gp_2 = df_gp[df_gp['confidence'] > 0.8]
-
 # Capture frame-by-frame 
 while(cap.isOpened()): 
     key = cv2.waitKey(1) & 0xff
@@ -107,6 +115,15 @@ while(cap.isOpened()):
             actual_time  = frame_nr / 25
             # print('considering frame {} -> actual time: {}'.format(frame_nr, actual_time))
 
+            # Draw if hazard button is pressed
+            found_annotations = df_a[(df_a['frame'] >= frame_nr - 1) & (df_a['frame'] < frame_nr - 1 + 15)]
+            print('--- found {} annotations on frame {}'.format(len(found_annotations), frame_nr - 1))
+
+            if len(found_annotations) > 0:
+                cv2.rectangle(frame, (450, 0), (1200, 80), (0, 0, 255), -1, 1)
+                cv2.putText(frame, "HAZARD BUTTON PRESSED", (500, 50), 
+                                cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 4, cv2.LINE_AA);
+
             # Draw first GPs
             gaze_position_overlays = df_gp[df_gp['frame'] == frame_nr]
             print('found {} gaze positions around frame {}'.format(len(gaze_position_overlays), frame_nr))
@@ -119,19 +136,6 @@ while(cap.isOpened()):
                     # print('x: {}, y: {}'.format(x,y))
 
                     cv2.circle(frame, (int(x), int(y)), 20, (161, 254, 141), -1)
-
-            # Draw second GPs  
-            gaze_position_overlays = df_gp_2[df_gp_2['frame'] == frame_nr]
-            print('found {} gaze positions around frame {}'.format(len(gaze_position_overlays), frame_nr))
-
-            for index, gaze_position in gaze_position_overlays.iterrows():
-                if not math.isnan(gaze_position['true_x_scaled']) and not math.isnan(gaze_position['true_y_scaled']):
-                    x = gaze_position['true_x_scaled'] + __constants.total_surface_width/2
-                    y = 1200 - (gaze_position['true_y_scaled'] + __constants.total_surface_height/2) # change back to "old" coordinate system
-
-                    # print('x: {}, y: {}'.format(x,y))
-
-                    cv2.circle(frame, (int(x), int(y)), 10, (0, 0, 255), -1)
 
             # print('considering frame {}'.format(frame_nr))
             # print('found {} overlay(s) in data frame'.format(len(overlays)))

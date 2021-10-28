@@ -1,6 +1,6 @@
 ## Input folder
-# input_folder = '/Users/joris/Development/HPT/hpt-software/inputs' # path on joris machine
-input_folder = '/Users/treyescan/Development/pilot-data'
+input_folder = '/Users/joris/Development/HPT/pilot-data' # path on joris machine
+# input_folder = '/Users/treyescan/Development/pilot-data'
 
 ## Maxmimum coefficient of linear fit on ijkframes_found per scene
 max_coef_lin_fit_ijkframes = 0.3
