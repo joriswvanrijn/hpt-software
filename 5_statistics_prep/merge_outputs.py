@@ -11,7 +11,10 @@ participant_folders = glob.glob("{}/*/".format(output_folder))
 dfs = []
 
 for participant in participant_folders:
-    list_of_files = glob.glob("{}{}/*.csv".format(output_folder, participant)) # * means all if need specific format then *.csv
+    folder = "{}{}/Deel1/*.csv".format(output_folder, participant)
+    list_of_files = glob.glob(folder) # * means all if need specific format then *.csv
+    print(folder)
+
     latest_file = max(list_of_files, key=os.path.getctime)
     print('added {}'.format(latest_file))
     df = pd.read_csv(latest_file)
