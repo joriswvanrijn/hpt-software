@@ -11,7 +11,7 @@ participant_folders = glob.glob("{}/*/".format(output_folder))
 dfs = []
 
 for participant in participant_folders:
-    folder = "{}{}/Deel1/*.csv".format(output_folder, participant)
+    folder = "{}{}/Deel3/*.csv".format(output_folder, participant)
     list_of_files = glob.glob(folder) # * means all if need specific format then *.csv
     print(folder)
 
