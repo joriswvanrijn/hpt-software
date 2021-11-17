@@ -7,8 +7,8 @@ import statistics
 import os.path
 
 def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
-    # TODO: Don't remove rows, only NaN them (off screen and below confidence of .8)
-    # TODO: if gap duration < 60ms -> interpolate
+    # ✅ TODO: Don't remove rows, only NaN them (off screen and below confidence of .8)
+    # ▶️ TODO: if gap duration < 60ms -> interpolate
     # TODO: if gap duration > 60ms -> NaN them
 
     # EVENT detection
@@ -27,35 +27,29 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
 
     df = pd.read_csv(input_file_name)
 
-    # Set the total amount of jobs we're performing in this task
-    # progress.print('[bold yellow]We are starting identifying gaps in {}'.format(input_file_name))
+    # Set X and Y to NaN when confidence < treshold
+    df['true_x_scaled'][df['confidence'] < __constants.confidence_treshold] = np.NaN
+    df['true_y_scaled'][df['confidence'] < __constants.confidence_treshold] = np.NaN
+    
+    # TODO: output text file stating how many X,Y's were changed to NaN
 
-    # Identify blinks in merged surfaces data (filter everything below threshold)
-    dfAboveTreshold = df[df['confidence'] >= __constants.confidence_treshold] 
+    # Set X and Y to NaN when not looking on screen
+    df['true_x_scaled'][df['on_screen'] == False] = np.NaN
+    df['true_y_scaled'][df['on_screen'] == False] = np.NaN
 
-    progress.print('{} in original DF '.format(len(df)))
-    progress.print('{} in dfAboveTreshold '.format(len(dfAboveTreshold)))
-    progress.print('{} rows removed due to conf < .8 '.format( len(df) - len(dfAboveTreshold) ))
-    progress.print('[bold red] {}% percent of rows removed due to conf < .8 '.format(
-        round((len(df) - len(dfAboveTreshold))/len(df), 2) * 100
-    ))
+    # For debugging purposes:
+    # print(df[['confidence', 'on_screen', 'true_x_scaled', 'true_y_scaled']][df['on_screen'] == False].head())
+    # print(df[['confidence', 'on_screen', 'true_x_scaled', 'true_y_scaled']][df['confidence'] < __constants.confidence_treshold].head())
 
-    df = dfAboveTreshold
-    dfWithoutOffScreen = df[df['on_screen'] == True]
-
-    progress.print('{} in original DF (with conf > .8) '.format(len(df)))
-    progress.print('{} in df WithoutOffScreen '.format(len(dfWithoutOffScreen)))
-    progress.print('{} rows removed due to conf < .8 '.format( len(df) - len(dfWithoutOffScreen) ))
-    progress.print('[bold red] {}% percent of rows removed due to on_screen == False '.format(
-        round((len(df) - len(dfWithoutOffScreen))/len(df) * 100, 4)
-    ))
-
-    df = dfWithoutOffScreen
-
-    progress.print('[bold blue] {} total new rows '.format(
-        len(df)
-    ))
-
+    # TODO: output text file stating how many X,Y's were changed to NaN
+    # May use this:
+    # progress.print('{} in original DF '.format(len(df)))
+    # progress.print('{} in dfAboveTreshold '.format(len(dfAboveTreshold)))
+    # progress.print('{} rows removed due to conf < .8 '.format( len(df) - len(dfAboveTreshold) ))
+    # progress.print('[bold red] {}% percent of rows removed due to conf < .8 '.format(
+    #     round((len(df) - len(dfAboveTreshold))/len(df), 2) * 100
+    # ))
+ 
     progress.advance(task)
 
     progress.print("Done! We will start outputting the dataframe to a csv file. This will take a second.")
@@ -83,7 +77,7 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
 
     #     # Some nice progress output
     #     if(counter % 2000 == 0 or counter == 0):
-    #         progress.print('[bold deep_pink4]Processed: {}/{}'.format(counter, len(df)))
+    #         progress.print('[bold deep _pink4]Processed: {}/{}'.format(counter, len(df)))
     #     counter = counter + 1
 
     #     if(sample['is_valid_gap'] == False):

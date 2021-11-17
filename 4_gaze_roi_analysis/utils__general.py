@@ -18,11 +18,11 @@ def show_error(message, progress):
     raise Exception(message)
 
 def ask_for_participant_id():
-    id = console.input("Provide the [bold cyan]participant id[/bold cyan] [i bright_black](default: inputYF)[/i bright_black]: ") or "inputYF"
+    id = console.input("Provide the [bold cyan]participant id[/bold cyan] [i bright_black](default: P-022)[/i bright_black]: ") or "P-022"
     return id
 
 def ask_for_video_id():
-    file = console.input("Provide the [bold cyan]video ID (e.g. Deel 1)[/bold cyan] (for input folder and both ROI & synchronisation file) [i bright_black](default: validatietaak)[/i bright_black]: ") or "validatietaak"
+    file = console.input("Provide the [bold cyan]video ID (e.g. Deel 1)[/bold cyan] (for input folder and both ROI & synchronisation file) [i bright_black](default: Deel1)[/i bright_black]: ") or "Deel1"
     check_rois_files(file)
     return file
 

@@ -2,4 +2,4 @@ inputs/
 outputs/
 rois/
 videos/
-__pycache__
+__pycache__/
