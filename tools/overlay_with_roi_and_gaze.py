@@ -52,15 +52,12 @@ df_a = pd.read_csv(annotations_data_path, header=0)
 # Prepare data
 df = prepare_aois_df(df)
 
-if df_gp['gaze_timestamp'][0] < 0:
-    df_gp['actual_time'] = df_gp['gaze_timestamp'] + abs(df_gp.loc[0, 'gaze_timestamp'])
+# NOTE: the timestamps of the merged gaze positions are normalized in merge_gaze_positions
+
+if df_a['gaze_timestamp'][0] < 0:
     df_a['actual_time'] = df_a['timestamp'] + abs(df_gp.loc[0, 'gaze_timestamp'])
 else:
-    df_gp['actual_time'] = df_gp['gaze_timestamp'] - abs(df_gp.loc[0, 'gaze_timestamp'])
     df_a['actual_time'] = df_a['timestamp'] - abs(df_gp.loc[0, 'gaze_timestamp'])
-
-df_gp['frame'] = df_gp['actual_time']*25 + 0.00001
-df_gp['frame'] = df_gp['frame'].astype(int)
 
 df_a['frame'] = df_a['actual_time']*25 + 0.00001
 df_a['frame'] = df_a['frame'].astype(int)

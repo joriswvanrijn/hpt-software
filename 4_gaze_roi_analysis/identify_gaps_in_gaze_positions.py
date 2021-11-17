@@ -7,6 +7,14 @@ import statistics
 import os.path
 
 def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
+    # TODO: Don't remove rows, only NaN them (off screen and below confidence of .8)
+    # TODO: if gap duration < 60ms -> interpolate
+    # TODO: if gap duration > 60ms -> NaN them
+
+    # EVENT detection
+    # TODO: interpoleren
+    # TODO: generate TSV (x y)
+
     input_file_name = '{}/{}/{}/merged_surfaces.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
@@ -49,6 +57,10 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     ))
 
     progress.advance(task)
+
+    progress.print("Done! We will start outputting the dataframe to a csv file. This will take a second.")
+    df.to_csv(output_file_name, index=False)
+    progress.print('[bold green]We are done! The new csv is outputted to {} and contains {} rows.'.format(output_file_name, len(df)))
 
     # We commented this section below on 21 oct
     # since can't calculate the SRM in this way anymore since we remove gaps due to blinks (conf < .8) or of screen
@@ -101,7 +113,3 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     #             df.iloc[index, df.columns.get_loc('true_y_scaled_SRM')] = sample['true_y_scaled']
 
     #     progress.advance(task)
-
-    progress.print("Done! We will start outputting the dataframe to a csv file. This will take a second.")
-    df.to_csv(output_file_name, index=False)
-    progress.print('[bold green]We are done! The new csv is outputted to {} and contains {} rows.'.format(output_file_name, len(df)))

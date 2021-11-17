@@ -1,6 +1,7 @@
 import __constants
 import pandas as pd
 import numpy as np 
+import sys
 
 def merge_gaze_positions(participant_id, video_id, progress, task):
     ## Variables
@@ -35,7 +36,7 @@ def merge_gaze_positions(participant_id, video_id, progress, task):
         progress.print('- Creating true_y_scaled from y_norm in data frame #{}'.format(n))
         dfs[n]['true_y_scaled'] = dfs[n]['y_norm'] * __constants.total_surface_height
 
-        # New collum with surface number.
+        # New column with surface number.
         progress.print('- Adding surface number to data frame #{}'.format(n))
         dfs[n]['surface_no'] = n
 
@@ -158,6 +159,16 @@ def merge_gaze_positions(participant_id, video_id, progress, task):
 
     # Order the df on gaze_timestamp
     new_df = new_df.sort_values(by=['gaze_timestamp'], kind='mergesort')
+
+    # Normalize timestamps to actual time (in seconds)
+    new_df = new_df.reset_index()
+
+    if new_df['gaze_timestamp'][0] < 0:
+        new_df['actual_time'] = new_df['gaze_timestamp'] + abs(new_df.loc[0, 'gaze_timestamp'])
+        new_df['frame'] = new_df['actual_time']*25 + 0.00001
+    else:
+        new_df['actual_time'] = new_df['gaze_timestamp'] - abs(new_df.loc[0, 'gaze_timestamp'])
+        new_df['frame'] = new_df['actual_time']*25 + 0.00001 
 
     # Write the csv
     progress.print("We will start outputting the dataframe to a csv file. This will take a second.")

@@ -23,17 +23,6 @@ def identify_hits(participant_id, video_id, rois_file, progress, task):
     df_gps = pd.read_csv(input_file_name)
     progress.print('found {} gaze position records'.format(len(df_gps)))
 
-    # df_gps['actual_time'] = df_gps['gaze_timestamp'] + abs(df_gps.loc[0, 'gaze_timestamp'])
-    # df_gps['frame'] = df_gps['actual_time']*24.97
-
-    if df_gps['gaze_timestamp'][0] < 0:
-        df_gps['actual_time'] = df_gps['gaze_timestamp'] + abs(df_gps.loc[0, 'gaze_timestamp'])
-        df_gps['frame'] = df_gps['actual_time']*25 + 0.00001
-    else:
-        df_gps['actual_time'] = df_gps['gaze_timestamp'] - abs(df_gps.loc[0, 'gaze_timestamp'])
-        df_gps['frame'] = df_gps['actual_time']*25 + 0.00001 
-
-    # df_gps = df_gps.round({'actual_time': 2, 'frame': 0})
     df_gps['frame'] = np.ceil(df_gps['frame'])
     df_gps['frame'] = df_gps['frame'].astype(int)
 
