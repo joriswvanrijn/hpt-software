@@ -1,5 +1,5 @@
 import __constants
-from utils__general import ask_for_participant_id, ask_for_starting_task, prepare_tasks, we_are_not_skipping_task, ask_for_video_id, check_participant_id
+from utils__general import ask_for_participant_id, ask_for_starting_task, prepare_aoi_tasks, we_are_not_skipping_task, ask_for_video_id, check_participant_id
 from merge_gaze_positions import merge_gaze_positions
 from identify_gaps_in_gaze_positions import identify_gaps_in_gaze_positions
 from identify_hits import identify_hits
@@ -31,7 +31,6 @@ console.print("[bold yellow]Starting analysis for participant \"{}/{}\" at task 
 
 #### 1) Check ijk surfaces (calibration surfaces) on expected moments
 console.print("[cyan]1. Checking ijksurfaces")
-
 if(starting_task == 1):
     check_calibration_surfaces(participant_id, video_id, '{}.json'.format(video_id), console)
     if(not Confirm.ask("May we continue?")):
@@ -40,7 +39,7 @@ if(starting_task == 1):
 with progress_instance as progress:
 
     # Setting up all tasks (progress bar)
-    tasks = prepare_tasks(progress)
+    tasks = prepare_aoi_tasks(progress)
 
     #### 2) Merge the gaze_gaze_positions_on_surface_Surface*WB.csv (and dummy)
     if(we_are_not_skipping_task(2, starting_task, progress, tasks)):
@@ -50,16 +49,20 @@ with progress_instance as progress:
     if(we_are_not_skipping_task(3, starting_task, progress, tasks)):
         identify_gaps_in_gaze_positions(participant_id, video_id, progress, tasks[1])
 
-    #### 4) With the ROIs and the GPs: identify hits in the ROIs
+    #### 4) Median filter over the true_x_scaled and true_y_scaled (between the gaps)
     if(we_are_not_skipping_task(4, starting_task, progress, tasks)):
-        identify_hits(participant_id, video_id, '{}.csv'.format(video_id), progress, tasks[2])
+        progress.print("[red]TODO: Median filter")
 
-    #### 5) Identify entries and exits for all ROIs
+    #### 5) With the ROIs and the GPs: identify hits in the ROIs
     if(we_are_not_skipping_task(5, starting_task, progress, tasks)):
-        identify_entries_and_exits(participant_id, video_id, '{}.csv'.format(video_id), progress, tasks[3])
+        identify_hits(participant_id, video_id, '{}.csv'.format(video_id), progress, tasks[3])
 
-    #### 6) Generate an output.csv to use in further analysis
+    #### 6) Identify entries and exits for all ROIs
     if(we_are_not_skipping_task(6, starting_task, progress, tasks)):
-        generate_output(participant_id, video_id, '{}.csv'.format(video_id), progress, tasks[4])
+        identify_entries_and_exits(participant_id, video_id, '{}.csv'.format(video_id), progress, tasks[4])
+
+    #### 7) Generate an output.csv to use in further analysis
+    if(we_are_not_skipping_task(7, starting_task, progress, tasks)):
+        generate_output(participant_id, video_id, '{}.csv'.format(video_id), progress, tasks[5])
 
     progress.print('[bold green]Done!')

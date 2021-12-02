@@ -50,12 +50,21 @@ def check_participant_id(id, video_id):
     if not os.path.isdir('../outputs/{}/{}'.format(id, video_id)):
         os.mkdir('../outputs/{}/{}'.format(id, video_id))
 
-def prepare_tasks(progress):
+def prepare_aoi_tasks(progress):
      return [
-        # progress.add_task("[cyan]1. Checking ijksurfaces", total=20),
-        progress.add_task("[cyan]2. Merging gaze positions", total=20),
-        progress.add_task("[cyan]3. Identifying gaps in gaze positions", total=1),
-        progress.add_task("[cyan]4. Identifying hits", total=50),
-        progress.add_task("[cyan]5. Identifying entries and exits", total=50),
-        progress.add_task("[cyan]6. Generating output", total=9),
+        progress.add_task("[cyan]2. Merging gaze positions", total=20), # 0
+        progress.add_task("[cyan]3. Identifying gaps in gaze positions", total=1), # 1
+        progress.add_task("[cyan]4. Median filter", total=1), # 2
+        progress.add_task("[cyan]5. Identifying hits", total=50), # 3
+        progress.add_task("[cyan]6. Identifying entries and exits", total=50), # 4
+        progress.add_task("[cyan]7. Generating output", total=9), # 5
+     ]
+
+def prepare_event_tasks(progress):
+     return [
+        progress.add_task("[cyan]2. Merging gaze positions", total=20), # 0
+        progress.add_task("[cyan]3. Identifying gaps in gaze positions", total=1), # 1
+        progress.add_task("[cyan]4. Interpolate time to linear scale and generate TSV (x y) with linear time", total=1), # 1
+        progress.add_task("[cyan]5. Call REMoDNaV to indentify events", total=1), # 1
+        # TODO:
      ]

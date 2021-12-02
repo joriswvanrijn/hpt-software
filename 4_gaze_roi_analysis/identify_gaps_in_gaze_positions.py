@@ -11,10 +11,6 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     # ✅ if gap duration < 60ms -> interpolate NaN
     # ✅ if gap duration > 60ms -> NaN them
 
-    # EVENT detection
-    # TODO: interpoleren to linear time axis
-    # TODO: generate TSV (x y)
-
     input_file_name = '{}/{}/{}/merged_surfaces.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
@@ -102,8 +98,6 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     progress.print("Done! We will start outputting the dataframe to a csv file. This will take a second.")
     df.to_csv(output_file_name, index=False)
     progress.print('[bold green]We are done! The new csv is outputted to {} and contains {} rows.'.format(output_file_name, len(df)))
-
-    sys.exit()
 
     # We commented this section below on 21 oct
     # since can't calculate the SRM in this way anymore since we remove gaps due to blinks (conf < .8) or of screen
