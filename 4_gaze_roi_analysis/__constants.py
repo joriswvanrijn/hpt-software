@@ -7,6 +7,7 @@ max_coef_lin_fit_ijkframes = 0.3
 
 ## Identifying gaps
 confidence_treshold = 0.8 #
+interpolate_if_gap_shorter_than = 0.06 # s
 
 ## Calculating AOI hits
 distance_to_screen = 65.06 # in cm 
