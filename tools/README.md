@@ -4,6 +4,8 @@
 
 ```bash
 python3 overlay_with_roi_and_gaze.py --video="../inputs/Deel1.mp4" --data="../rois/deel1.csv" --participant="../../pilot-data/P-022/Deel1" --start_frame=800
+
+python3 overlay_multiple_participants.py --video="../inputs/Deel1.mp4" --data="../rois/deel1.csv" --deel="Deel1" --start_frame=800
 ```
 
 ## Overlaying ROIS over a video
