@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 import cv2, os, sys
 import time, math
+import numpy as np
 
 sys.path.append('../4_gaze_roi_analysis')
 import __constants
@@ -26,7 +27,7 @@ participant_folder = args.participant
 offset = args.offset
 start_frame = args.start_frame - 1
 
-gaze_data_path = '{}/merged_surfaces_with_gaps.csv'.format(participant_folder)
+gaze_data_path = '{}/gaze_positions.csv'.format(participant_folder)
 annotations_data_path = '{}/annotations.csv'.format(participant_folder)
 
 def ResizeWithAspectRatio(image, width=None, height=None, inter=cv2.INTER_AREA):
@@ -54,13 +55,17 @@ df = prepare_aois_df(df)
 
 # NOTE: the timestamps of the merged gaze positions are normalized in merge_gaze_positions
 
-if df_a['gaze_timestamp'][0] < 0:
+if df_a['timestamp'][0] < 0:
     df_a['actual_time'] = df_a['timestamp'] + abs(df_gp.loc[0, 'gaze_timestamp'])
 else:
     df_a['actual_time'] = df_a['timestamp'] - abs(df_gp.loc[0, 'gaze_timestamp'])
 
 df_a['frame'] = df_a['actual_time']*25 + 0.00001
 df_a['frame'] = df_a['frame'].astype(int)
+
+# TODO: remove in january 2022
+df_gp['frame'] = np.ceil(df_gp['frame'])
+df_gp['frame'] = df_gp['frame'].astype(int)
 
 # print(df_a.head())
 # sys.exit()
@@ -126,9 +131,9 @@ while(cap.isOpened()):
             print('found {} gaze positions around frame {}'.format(len(gaze_position_overlays), frame_nr))
 
             for index, gaze_position in gaze_position_overlays.iterrows():
-                if not math.isnan(gaze_position['true_x_scaled']) and not math.isnan(gaze_position['true_y_scaled']):
-                    x = gaze_position['true_x_scaled'] + __constants.total_surface_width/2
-                    y = 1200 - (gaze_position['true_y_scaled'] + __constants.total_surface_height/2) # change back to "old" coordinate system
+                if not math.isnan(gaze_position['x']) and not math.isnan(gaze_position['y']):
+                    x = gaze_position['x'] + __constants.total_surface_width/2
+                    y = 1200 - (gaze_position['y'] + __constants.total_surface_height/2) # change back to "old" coordinate system
 
                     # print('x: {}, y: {}'.format(x,y))
 

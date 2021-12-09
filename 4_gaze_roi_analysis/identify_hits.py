@@ -23,6 +23,7 @@ def identify_hits(participant_id, video_id, rois_file, progress, task):
     df_gps = pd.read_csv(input_file_name)
     progress.print('found {} gaze position records'.format(len(df_gps)))
 
+    # TODO: remove in january 2022
     df_gps['frame'] = np.ceil(df_gps['frame'])
     df_gps['frame'] = df_gps['frame'].astype(int)
 
