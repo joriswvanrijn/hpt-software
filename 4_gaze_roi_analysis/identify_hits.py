@@ -14,7 +14,7 @@ def identify_hits(participant_id, video_id, rois_file, progress, task):
     df_rois = prepare_aois_df(df_rois)
 
     # Check if our input file exists
-    input_file_name = '{}/{}/{}/merged_surfaces_with_gaps.csv'.format(
+    input_file_name = '{}/{}/{}/gaze_positions.csv'.format(
         __constants.input_folder, participant_id, video_id)
     if not os.path.isfile(input_file_name):
         show_error('Input file for step 3 is not found. Run step 2 first.', progress)
