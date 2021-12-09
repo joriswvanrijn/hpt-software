@@ -1,6 +1,7 @@
 import __constants
 from utils__general import ask_for_participant_id, ask_for_starting_task, prepare_aoi_tasks, we_are_not_skipping_task, ask_for_video_id, check_participant_id
 from merge_gaze_positions import merge_gaze_positions
+from apply_median_filter_on_coordinates import apply_median_filter_on_coordinates
 from identify_gaps_in_gaze_positions import identify_gaps_in_gaze_positions
 from identify_hits import identify_hits
 from identify_entries_and_exits import identify_entries_and_exits
@@ -51,7 +52,7 @@ with progress_instance as progress:
 
     #### 4) Median filter over the true_x_scaled and true_y_scaled (between the gaps)
     if(we_are_not_skipping_task(4, starting_task, progress, tasks)):
-        progress.print("[red]TODO: Median filter")
+        apply_median_filter_on_coordinates(participant_id, video_id, progress, tasks[2])
 
     #### 5) With the ROIs and the GPs: identify hits in the ROIs
     if(we_are_not_skipping_task(5, starting_task, progress, tasks)):
