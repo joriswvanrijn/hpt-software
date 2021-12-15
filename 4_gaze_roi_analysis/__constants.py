@@ -1,9 +1,15 @@
+import math
+
 ## Input folder
 input_folder = '/Users/joris/Development/HPT/pilot-data' # path on joris machine
 # input_folder = '/Users/treyescan/Development/pilot-data' # path on yasmin machine
 
 ## Maxmimum coefficient of linear fit on ijkframes_found per scene
 max_coef_lin_fit_ijkframes = 0.3
+
+## Needed for remodnav
+# px2deg = math.degrees(math.atan2(.5 * 155.08161968, 65.06)) / (.5 * 5760)
+px2deg = 0.017361783368346345
 
 ## Sample rate (Hz)
 sample_rate_ET = 240
