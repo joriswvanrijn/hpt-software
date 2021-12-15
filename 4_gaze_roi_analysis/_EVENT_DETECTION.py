@@ -2,9 +2,7 @@ import __constants
 from utils__general import ask_for_participant_id, ask_for_starting_task, prepare_event_tasks, we_are_not_skipping_task, ask_for_video_id, check_participant_id
 from merge_gaze_positions import merge_gaze_positions
 from identify_gaps_in_gaze_positions import identify_gaps_in_gaze_positions
-from identify_hits import identify_hits
-from identify_entries_and_exits import identify_entries_and_exits
-from generate_output import generate_output
+from to_lin_time_scale_and_generate_tsv import to_lin_time_scale_and_generate_tsv
 from check_calibration_surfaces import check_calibration_surfaces
 from rich.progress import Progress, TimeElapsedColumn, BarColumn, TimeRemainingColumn
 import time, sys
@@ -52,8 +50,7 @@ with progress_instance as progress:
 
     #### 4) Interpolate time to linear scale and generate TSV (x y) with linear time
     if(we_are_not_skipping_task(4, starting_task, progress, tasks)):
-        progress.print("[red]TODO: interpolate to linear time axis")
-        progress.print("[red]TODO: generate TSV (x y)")
+        to_lin_time_scale_and_generate_tsv(participant_id, video_id, progress, tasks[2])
 
     #### 5) Call REMoDNaV to indentify events
     if(we_are_not_skipping_task(5, starting_task, progress, tasks)):

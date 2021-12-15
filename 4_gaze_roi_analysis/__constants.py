@@ -5,6 +5,9 @@ input_folder = '/Users/joris/Development/HPT/pilot-data' # path on joris machine
 ## Maxmimum coefficient of linear fit on ijkframes_found per scene
 max_coef_lin_fit_ijkframes = 0.3
 
+## Sample rate (Hz)
+sample_rate_ET = 240
+
 ## Identifying gaps
 confidence_treshold = 0.8 #
 interpolate_if_gap_shorter_than = 0.06 # s
