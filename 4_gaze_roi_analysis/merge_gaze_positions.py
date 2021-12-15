@@ -8,6 +8,7 @@ def merge_gaze_positions(participant_id, video_id, progress, task):
     n_surfaces = 9 # 1 t/m 9
     surfaces_base_name = '{}/{}/{}/gaze_positions_on_surface_Surface{:d}WB.csv'
     dummy_surface_base_name = '{}/{}/{}/gaze_positions_on_surface_dummysurface.csv'
+    ijk_surface_base_name = '{}/{}/{}/gaze_positions_on_surface_ijksurface.csv'
     output_file_name = '{}/{}/{}/merged_surfaces.csv'.format(
         __constants.input_folder, participant_id, video_id)
     surfaces = __constants.surfaces
@@ -113,12 +114,19 @@ def merge_gaze_positions(participant_id, video_id, progress, task):
     final_df = final_df.sort_values(by=['gaze_timestamp'], kind='mergesort')
     progress.advance(task)
 
-    ## 9. Correct the offset by finding the first gaze_timestamp from the dummy surface and remove everything 
+    ## 9a. Correct the offset by finding the first gaze_timestamp from the dummy surface and remove everything 
     # before it from the final dataset.
     dummy_df = pd.read_csv(dummy_surface_base_name.format(__constants.input_folder, participant_id, video_id))
     first_gaze_timestamp = dummy_df.iloc[0]['gaze_timestamp']
     final_df = final_df[final_df['gaze_timestamp'] >= first_gaze_timestamp]
     progress.print("We are now fetching the first known gaze timestamp from the dummy surfaces, and removing everything before it")
+
+    ## 9b. Correct the ending of the dataset, by removing everything after the 
+    # last gaze_timestamp from the ijk surface dataframe.
+    ijk_df = pd.read_csv(ijk_surface_base_name.format(__constants.input_folder, participant_id, video_id))
+    last_gaze_timestamp = ijk_df.iloc[-1]['gaze_timestamp']
+    final_df = final_df[final_df['gaze_timestamp'] <= last_gaze_timestamp]
+    progress.print("We are now fetching the last known gaze timestamp from the ijk surfaces, and removing everything after it")
     progress.advance(task)
 
     ## 10. Add offsets to true_x_scaled and true_y_scaled so the center of the screen is (0, 0)
