@@ -1,8 +1,8 @@
 import math
 
 ## Input folder
-input_folder = '/Users/joris/Development/HPT/pilot-data' # path on joris machine
-# input_folder = '/Users/treyescan/Development/pilot-data' # path on yasmin machine
+# input_folder = '/Users/joris/Development/HPT/pilot-data' # path on joris machine
+input_folder = '/Users/treyescan/Development/pilot-data' # path on yasmin machine
 
 ## Maxmimum coefficient of linear fit on ijkframes_found per scene
 max_coef_lin_fit_ijkframes = 0.3
@@ -15,8 +15,8 @@ px2deg = 0.017361783368346345
 sample_rate_ET = 240
 
 ## Identifying gaps
-confidence_treshold = 0.8 #
-interpolate_if_gap_shorter_than = 0.06 # s
+confidence_treshold = 0.7 #
+interpolate_if_gap_shorter_than = 0.075 # s
 
 ## Calculating AOI hits
 distance_to_screen = 65.06 # in cm 
