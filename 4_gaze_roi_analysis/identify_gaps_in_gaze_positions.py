@@ -5,6 +5,7 @@ import numpy as np
 import sys
 import statistics
 import os.path
+import json
 
 def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     input_file_name = '{}/{}/{}/merged_surfaces.csv'.format(
@@ -68,6 +69,7 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     currentGapStartedAtIndex = np.NaN
     durationOfCurrentGap = 0
     interpolatedRows = 0
+    gap_timestamps_to_save = []
 
     for index, gp in df.iterrows():
         if(index % 2000 == 0 or index == 0):
@@ -103,11 +105,25 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
 
                 # For debugging purposes
                 # print(df.loc[(currentGapStartedAtIndex - 1):index, ['confidence', 'on_screen', 'true_x_scaled', 'true_y_scaled']].head())
+            else:
+                #TODO: we need to save the start and end time of the gap
+                # since we need it in to_lin_time_scale_and_generate_tsv
+                # to NaN the x,y after interpolating is done
+                startTimestamp = df.iloc[(currentGapStartedAtIndex - 1)]['actual_time']
+                endTimestamp = df.iloc[index]['actual_time']
+                gap_timestamps_to_save.append([startTimestamp, endTimestamp])
 
             # Reset
             currentlyAtGap = False
             durationOfCurrentGap = 0
             currentGapStartedAtIndex = np.NaN
+
+    # Save gap indexes to file
+    gap_timestamps_file = '../outputs/{}/{}/gap_timestamps.json'.format(participant_id, video_id)
+
+    file_handle = open(gap_timestamps_file, "w")
+    json.dump(gap_timestamps_to_save, file_handle)
+    file_handle.close()
 
     with open(text_file,"a+") as f:
         percentage = round(interpolatedRows/total_count*100, 2)

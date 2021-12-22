@@ -4,6 +4,7 @@ import numpy as np
 from scipy.interpolate import PchipInterpolator
 import matplotlib.pyplot as plt
 import sys
+import json
 
 def to_lin_time_scale_and_generate_tsv(participant_id, video_id, progress, task):
     progress.print("[red]TODO: interpolate to linear time axis")
@@ -12,26 +13,17 @@ def to_lin_time_scale_and_generate_tsv(participant_id, video_id, progress, task)
     input_file_name = '{}/{}/{}/merged_surfaces_with_gaps.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
-    output_file_name_with_nan = '{}/{}/{}/linspaced_gaze_positions_with_nan.csv'.format(
-        __constants.input_folder, participant_id, video_id)
-
-    output_file_name_without_nan = '{}/{}/{}/linspaced_gaze_positions_without_nan.csv'.format(
+    output_file_name = '{}/{}/{}/linspaced_gaze_positions.csv'.format(
         __constants.input_folder, participant_id, video_id)
     
-    output_file_name_tsv_with_nan = '{}/{}/{}/linspaced_gaze_positions_with_nan.tsv'.format(
-        __constants.input_folder, participant_id, video_id)
-
-    output_file_name_tsv_without_nan = '{}/{}/{}/linspaced_gaze_positions_without_nan.tsv'.format(
+    output_file_name_tsv_with_nan = '{}/{}/{}/linspaced_gaze_positions.tsv'.format(
         __constants.input_folder, participant_id, video_id)
 
     # Read GP
     gp = pd.read_csv(input_file_name)
 
-    # Change time scale to linear, try to match NaN's (keep them in final data set)
-    gp_with_nan = to_lin_time(progress, gp, output_file_name_with_nan, keepNaN=True)
-
-    # Change time scale to linear, interpolate ALL gaps (so we're left with no NaN's)
-    gp_without_nan = to_lin_time(progress, gp, output_file_name_without_nan, keepNaN=False)
+    # Change time scale to linear
+    gp_with_nan = to_lin_time(progress, gp, output_file_name, participant_id, video_id)
 
     # controle stap
     # plt.plot(gp.actual_time, gp.true_x_scaled)
@@ -40,26 +32,15 @@ def to_lin_time_scale_and_generate_tsv(participant_id, video_id, progress, task)
 
     # Generate a tsv file
     gp_with_nan[['x', 'y']].to_csv(output_file_name_tsv_with_nan, sep="\t", index=False, header=False)
-    gp_without_nan[['x', 'y']].to_csv(output_file_name_tsv_without_nan, sep="\t", index=False, header=False)
-
-    # Compare both tsv's
-    differences = gp_with_nan.compare(gp_without_nan)
-    differences = differences.reset_index()
-    print(differences)
 
     sys.exit()
 
-def to_lin_time(progress, gp, output_file_name, keepNaN=True):
-    first_timestamp = gp.actual_time.iloc[0]  
-    last_timestamp = gp.actual_time.iloc[-1]  
-
-    very_large_number = np.iinfo(np.intp).max
-
-    if(keepNaN):
-        gp['true_x_scaled'].fillna(very_large_number, inplace=True)
-        gp['true_y_scaled'].fillna(very_large_number, inplace=True)
-    else:
-        gp = gp[gp['true_x_scaled'].notna()] # NB: x and y are the same
+def to_lin_time(progress, original_gp, output_file_name, participant_id, video_id):
+    first_timestamp = original_gp.actual_time.iloc[0]  
+    last_timestamp = original_gp.actual_time.iloc[-1] 
+    
+    # create gp df without nans (otherwise we cant interpolate)
+    gp = original_gp[original_gp['true_x_scaled'].notna()] # NB: x and y are the same
 
     progress.print('First timestamp: {}'.format(first_timestamp))
     progress.print('Last timestamp: {}'.format(last_timestamp))
@@ -83,13 +64,16 @@ def to_lin_time(progress, gp, output_file_name, keepNaN=True):
     gazeInt.loc[:, 'x'] = interp(gp.actual_time, gp.true_x_scaled)
     gazeInt.loc[:, 'y'] = interp(gp.actual_time, gp.true_y_scaled)
 
-    # Set all high x/y values to NaN again
-    if(keepNaN):
-        gazeInt.loc[gazeInt['x'] > 20000, 'x'] = np.NaN
-        gazeInt.loc[gazeInt['y'] > 20000, 'y'] = np.NaN
-        gp.loc[gp['true_x_scaled'] == very_large_number, 'true_x_scaled'] = np.NaN
-        gp.loc[gp['true_y_scaled'] == very_large_number, 'true_y_scaled'] = np.NaN
+    # Now, check in the original dataframe where we have gaps
+    # NaN the x,y in rows where we know there is a gap
+    gap_timestamps_file = '../outputs/{}/{}/gap_timestamps.json'.format(participant_id, video_id)
+    a_file = open(gap_timestamps_file, "r")
+    gap_timestamps = json.loads(a_file.read())
 
+    for timestamp in gap_timestamps:
+        gazeInt.loc[(gazeInt['actual_time'] > timestamp[0]) & (gazeInt['actual_time'] < timestamp[1]), 'x'] = np.NaN
+        gazeInt.loc[(gazeInt['actual_time'] > timestamp[0]) & (gazeInt['actual_time'] < timestamp[1]), 'y'] = np.NaN
+        
     gazeInt.to_csv(output_file_name)
 
     return gazeInt
