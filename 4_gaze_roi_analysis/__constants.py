@@ -1,8 +1,10 @@
 import math
 
 ## Input folder
-input_folder = '/Users/joris/Development/HPT/pilot-data' # path on joris machine
+# input_folder = '/Users/joris/Development/HPT/pilot-data' # path on joris machine
 # input_folder = '/Users/treyescan/Development/pilot-data' # path on yasmin machine
+input_folder = '/Users/treyescan/Development/validatietaak-data' # path validatietaak on yasmin machine
+
 
 ## Maxmimum coefficient of linear fit on ijkframes_found per scene
 max_coef_lin_fit_ijkframes = 0.3
@@ -24,7 +26,7 @@ ppi = 94.34 # px per inch
 ppc = ppi/2.54 # px per cm 37,141732283
 z = d = distance_d = distance_to_screen_px = distance_to_screen * ppc # in pixels
 
-angle_a = error_angle = 1.5 # in degrees
+angle_a = error_angle = 2.5 # in degrees
 angle_b = minimal_angle_of_aoi = 0 # in degrees
 
 # ## Identifying entries and exits
