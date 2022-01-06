@@ -16,7 +16,7 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     output_file_name = '{}/{}/{}/merged_surfaces_with_gaps.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
-    output_file_name_2 = '{}/{}/{}/interpolated_gp_2.csv'.format(
+    output_file_name_2 = '{}/{}/{}/interpolated_gp.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
     text_file = '../outputs/{}/{}/number_of_filtered_rows.txt'.format(
@@ -158,7 +158,7 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     # Save how many gaps we set to NaN again
     # TODO:
 
-    sys.exit()
+    # sys.exit()
 
     progress.print("Done! We will start outputting the dataframe to a csv file. This will take a second.")
     df.to_csv(output_file_name, index=False)
@@ -168,6 +168,7 @@ def to_lin_time(progress, original_gp, output_file_name, participant_id, video_i
     first_timestamp = original_gp.actual_time.iloc[0]  
     last_timestamp = original_gp.actual_time.iloc[-1] 
     
+    #TODO: not necessary step
     # create gp df without nans (otherwise we cant interpolate)
     gp = original_gp[original_gp['true_x_scaled'].notna()] # NB: x and y are the same
 

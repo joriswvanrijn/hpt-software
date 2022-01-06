@@ -27,7 +27,7 @@ participant_folder = args.participant
 offset = args.offset
 start_frame = args.start_frame - 1
 
-gaze_data_path = '{}/gaze_positions.csv'.format(participant_folder)
+gaze_data_path = '{}/gp.csv'.format(participant_folder)
 annotations_data_path = '{}/annotations.csv'.format(participant_folder)
 
 def ResizeWithAspectRatio(image, width=None, height=None, inter=cv2.INTER_AREA):

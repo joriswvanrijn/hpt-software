@@ -8,7 +8,7 @@ import json
 def identify_entries_and_exits(participant_id, video_id, rois_file, progress, task):
     progress.print("[bold yellow]We are starting identifying entries and exits")
 
-    input_file_name = '../outputs/{}/{}/df_gps_x_rois.csv'.format(participant_id, video_id)
+    input_file_name = '../outputs/{}/{}/gp_x_aoi.csv'.format(participant_id, video_id)
     if not os.path.isfile(input_file_name):
         show_error('Input file for step 4 is not found. Run step 3 first.', progress)
 
@@ -45,11 +45,11 @@ def identify_entries_and_exits(participant_id, video_id, rois_file, progress, ta
             if(hit_row[roi] == 1 and len(entries_and_exits[roi]) % 2 == 0):
                 # We're looping and finding a 1 AND the previous found mark was an exit
                 # so mark this moment as an entry
-                entries_and_exits[roi].append(hit_row['actual_time'])
+                entries_and_exits[roi].append(hit_row['t'])
 
             if(hit_row[roi] == 0 and len(entries_and_exits[roi]) % 2 != 0):
                 # If we are finding a 0 and we may register an exit, do it
-                entries_and_exits[roi].append(hit_row['actual_time'])
+                entries_and_exits[roi].append(hit_row['t'])
     
     progress.advance(task)
 

@@ -14,7 +14,7 @@ def identify_hits(participant_id, video_id, rois_file, progress, task):
     df_rois = prepare_aois_df(df_rois)
 
     # Check if our input file exists
-    input_file_name = '{}/{}/{}/gaze_positions.csv'.format(
+    input_file_name = '{}/{}/{}/gp.csv'.format(
         __constants.input_folder, participant_id, video_id)
     if not os.path.isfile(input_file_name):
         show_error('Input file for step 3 is not found. Run step 2 first.', progress)
@@ -23,30 +23,26 @@ def identify_hits(participant_id, video_id, rois_file, progress, task):
     df_gps = pd.read_csv(input_file_name)
     progress.print('found {} gaze position records'.format(len(df_gps)))
 
+    df_gps['frame'] = df_gps['t']*25 + 0.00001
+
     # TODO: remove in january 2022
     df_gps['frame'] = np.ceil(df_gps['frame'])
     df_gps['frame'] = df_gps['frame'].astype(int)
 
     # Create a df x gps
     df_gps_x_rois = pd.DataFrame(columns = [
-        'gaze_timestamp',
-        'actual_time',
+        't',
         'frame',
         'x',
         'y',
-        'confidence',
-        'surface',
         # more columns to come: all roi's
     ])
 
-    df_gps_x_rois['gaze_timestamp'] = df_gps['gaze_timestamp']
-    df_gps_x_rois['actual_time'] = df_gps['actual_time']
+    df_gps_x_rois['t'] = df_gps['t']
     df_gps_x_rois['frame'] = df_gps['frame']
     df_gps_x_rois['x'] = df_gps['x']
     df_gps_x_rois['y'] = df_gps['y']
     df_gps_x_rois['y_for_hit_calculation'] = 1200 - df_gps['y']
-    df_gps_x_rois['confidence'] = df_gps['confidence']
-    df_gps_x_rois['surface'] = df_gps['surface_no']
 
     new_cols = df_rois['Object ID'].unique().reshape(1, -1)[0]
     # df_gps_x_rois[new_cols] = np.zeros([len(new_cols), len(df_gps_x_rois)])
@@ -54,7 +50,7 @@ def identify_hits(participant_id, video_id, rois_file, progress, task):
     zeros = np.zeros(shape=(len(df_gps_x_rois),len(new_cols)))
     df_gps_x_rois[new_cols] = pd.DataFrame(zeros, columns=new_cols)
 
-    df_gps_x_rois.to_csv('../outputs/{}/{}/df_gps_x_rois.csv'.format(participant_id, video_id))
+    df_gps_x_rois.to_csv('../outputs/{}/{}/gp_x_aoi.csv'.format(participant_id, video_id))
 
     progress.print('We saved a preliminary df_gps_x_rois (with all hits to 0)')
     progress.update(task, total=(len(df_gps_x_rois)-1))
@@ -98,6 +94,6 @@ def identify_hits(participant_id, video_id, rois_file, progress, task):
 
     progress.print('Done with iterating over all rows, now saving the file')
     progress.print('[bold green]Done! We saved df_gps_x_rois.csv with {} rows'.format(len(df_gps_x_rois)))
-    df_gps_x_rois.to_csv('../outputs/{}/{}/df_gps_x_rois.csv'.format(participant_id, video_id))
+    df_gps_x_rois.to_csv('../outputs/{}/{}/gp_x_aoi.csv'.format(participant_id, video_id))
 
     progress.advance(task)
