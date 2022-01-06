@@ -6,12 +6,17 @@ import sys
 import statistics
 import os.path
 import json
+from scipy.interpolate import PchipInterpolator
+import matplotlib.pyplot as plt
 
 def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     input_file_name = '{}/{}/{}/merged_surfaces.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
     output_file_name = '{}/{}/{}/merged_surfaces_with_gaps.csv'.format(
+        __constants.input_folder, participant_id, video_id)
+
+    output_file_name_2 = '{}/{}/{}/interpolated_gp_2.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
     text_file = '../outputs/{}/{}/number_of_filtered_rows.txt'.format(
@@ -92,26 +97,25 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
             # progress.print('Closed a gap at index: {}, with duration: {}s'.format(index, durationOfCurrentGap))
             # progress.print('Should we interpolate between index {} and index {}?'.format(currentGapStartedAtIndex, index))
 
-            if(durationOfCurrentGap < __constants.interpolate_if_gap_shorter_than):
-                # progress.print('[blue]Yes, we should interpolate. Do that now:')
+            # Increment interpolated rows
+            interpolatedRows = interpolatedRows + index - (currentGapStartedAtIndex - 1)
 
-                # Increment interpolated rows
-                interpolatedRows = interpolatedRows + index - (currentGapStartedAtIndex - 1)
-
-                # Interpolate x
-                df.loc[(currentGapStartedAtIndex - 1):index, 'true_x_scaled'] = df.loc[(currentGapStartedAtIndex - 1):index, 'true_x_scaled'].interpolate()
-                # Interpolate y
-                df.loc[(currentGapStartedAtIndex - 1):index, 'true_y_scaled'] = df.loc[(currentGapStartedAtIndex - 1):index, 'true_y_scaled'].interpolate()
-
-                # For debugging purposes
-                # print(df.loc[(currentGapStartedAtIndex - 1):index, ['confidence', 'on_screen', 'true_x_scaled', 'true_y_scaled']].head())
-            else:
-                #TODO: we need to save the start and end time of the gap
+            # Save the gap start and end time
+            if(durationOfCurrentGap > __constants.valid_gap_treshold):
+                # We need to save the start and end time of the gap
                 # since we need it in to_lin_time_scale_and_generate_tsv
                 # to NaN the x,y after interpolating is done
-                startTimestamp = df.iloc[(currentGapStartedAtIndex - 1)]['actual_time']
+                startTimestamp = df.iloc[(currentGapStartedAtIndex - 1)]['actual_time'] 
                 endTimestamp = df.iloc[index]['actual_time']
                 gap_timestamps_to_save.append([startTimestamp, endTimestamp])
+
+            # Interpolate x
+            df.loc[(currentGapStartedAtIndex - 1):index, 'true_x_scaled'] = df.loc[(currentGapStartedAtIndex - 1):index, 'true_x_scaled'].interpolate()
+            # Interpolate y
+            df.loc[(currentGapStartedAtIndex - 1):index, 'true_y_scaled'] = df.loc[(currentGapStartedAtIndex - 1):index, 'true_y_scaled'].interpolate()
+
+            # For debugging purposes
+            # print(df.loc[(currentGapStartedAtIndex - 1):index, ['confidence', 'on_screen', 'true_x_scaled', 'true_y_scaled']].head())
 
             # Reset
             currentlyAtGap = False
@@ -125,14 +129,68 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     json.dump(gap_timestamps_to_save, file_handle)
     file_handle.close()
 
+    # Dump some stats so we can read it later
     with open(text_file,"a+") as f:
         percentage = round(interpolatedRows/total_count*100, 2)
         percentage_nan_rows = round(interpolatedRows/NaN_count*100, 2)
         f.write('Interpolated {} rows ({}% of original data set, {}% of NaN rows)'.format(
             interpolatedRows, percentage, percentage_nan_rows))
 
+    # Interpolate to linear time scale
+    gp = to_lin_time(progress, df, output_file_name_2, participant_id, video_id)
+    
+    # Gaps > 75ms +/- (__constants.add_gap_samples) seconds naar NaN
+    # Now, check in the original dataframe where we have gaps (we saved this before)
+    # NaN the x,y in rows where we know there is a gap with (__constants.add_gap_samples) seconds margin
+    gap_timestamps_file = '../outputs/{}/{}/gap_timestamps.json'.format(participant_id, video_id)
+    a_file = open(gap_timestamps_file, "r")
+    gap_timestamps = json.loads(a_file.read())
+
+    for timestamp in gap_timestamps:
+        gp.loc[(gp['t'] > timestamp[0] - __constants.add_gap_samples) & \
+             (gp['t'] < timestamp[1] + __constants.add_gap_samples), 'x'] = np.NaN
+        gp.loc[(gp['t'] > timestamp[0] - __constants.add_gap_samples) & \
+             (gp['t'] < timestamp[1] + __constants.add_gap_samples), 'y'] = np.NaN
+
+    # Save the GP to a file
+    gp.to_csv(output_file_name_2)
+    
+    # Save how many gaps we set to NaN again
+    # TODO:
+
+    sys.exit()
+
     progress.print("Done! We will start outputting the dataframe to a csv file. This will take a second.")
     df.to_csv(output_file_name, index=False)
     progress.print('[bold green]We are done! The new csv is outputted to {} and contains {} rows.'.format(output_file_name, len(df)))
 
+def to_lin_time(progress, original_gp, output_file_name, participant_id, video_id):
+    first_timestamp = original_gp.actual_time.iloc[0]  
+    last_timestamp = original_gp.actual_time.iloc[-1] 
     
+    # create gp df without nans (otherwise we cant interpolate)
+    gp = original_gp[original_gp['true_x_scaled'].notna()] # NB: x and y are the same
+
+    progress.print('First timestamp: {}'.format(first_timestamp))
+    progress.print('Last timestamp: {}'.format(last_timestamp))
+    
+    progress.print('Average sample rate in data set: {}'.format(len(gp)/last_timestamp))
+
+    # we find the new index
+    timeIX = np.linspace(
+        int(np.floor(first_timestamp)), 
+        int(np.ceil(last_timestamp)), 
+        int(np.ceil(last_timestamp - first_timestamp) * __constants.sample_rate_ET + 1)
+    )
+ 
+    def interp(x, y):
+        f = PchipInterpolator(x, y, extrapolate=True)
+        return f(timeIX)
+
+    gazeInt = pd.DataFrame()
+    gazeInt.loc[:, 't'] = timeIX
+
+    gazeInt.loc[:, 'x'] = interp(gp.actual_time, gp.true_x_scaled)
+    gazeInt.loc[:, 'y'] = interp(gp.actual_time, gp.true_y_scaled)
+
+    return gazeInt

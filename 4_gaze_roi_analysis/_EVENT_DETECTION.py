@@ -51,6 +51,7 @@ with progress_instance as progress:
     #### 4) Interpolate time to linear scale and generate TSV (x y) with linear time
     if(we_are_not_skipping_task(4, starting_task, progress, tasks)):
         to_lin_time_scale_and_generate_tsv(participant_id, video_id, progress, tasks[2])
+        # TODO: Filter out everything which is marked as a valid gap
 
     #### 5) Call REMoDNaV to indentify events
     if(we_are_not_skipping_task(5, starting_task, progress, tasks)):
