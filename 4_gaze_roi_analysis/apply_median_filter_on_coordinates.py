@@ -1,3 +1,4 @@
+from re import X
 import __constants
 import pandas as pd
 import sys
@@ -26,8 +27,8 @@ def apply_median_filter_on_coordinates(participant_id, video_id, progress, task)
 
     # Calculate the medians of the coordinates (window=3)
     # df['may_calculate_SRM'] = False
-    df['x1'] = None
-    df['y1'] = None
+    df['x_SRM'] = None
+    df['y_SRM'] = None
 
     progress.print('[bold yellow]We are starting to calculate the Simple Rolling Median for x and y. This may take a while.')
 
@@ -46,29 +47,33 @@ def apply_median_filter_on_coordinates(participant_id, video_id, progress, task)
             # change this if we are changing window size > 3 
             if(index == 0 or index == df.shape[0] - 1):
                 # for first and last row of dataset
-                df.iloc[index, df.columns.get_loc('x')] = sample['x']
-                df.iloc[index, df.columns.get_loc('y')] = sample['y']
+                df.iloc[index, df.columns.get_loc('x_SRM')] = sample['x']
+                df.iloc[index, df.columns.get_loc('y_SRM')] = sample['y']
                 continue
         
             elif(df.at[index + 1, 'is_valid_gap'] == False and df.at[index - 1, 'is_valid_gap'] == False):
                 # for all other rows
-                df.iloc[index, df.columns.get_loc('x')] = statistics.median([
+                df.iloc[index, df.columns.get_loc('x_SRM')] = statistics.median([
                     df.at[index - 1, 'x'],
                     df.at[index, 'x'],
                     df.at[index + 1, 'x'],
                 ])
-                df.iloc[index, df.columns.get_loc('y')] = statistics.median([
+                df.iloc[index, df.columns.get_loc('y_SRM')] = statistics.median([
                     df.at[index - 1, 'y'],
                     df.at[index, 'y'],
                     df.at[index + 1, 'y'],
                 ])
 
             else:
-                df.iloc[index, df.columns.get_loc('x1')] = sample['x']
-                df.iloc[index, df.columns.get_loc('y1')] = sample['y']
+                df.iloc[index, df.columns.get_loc('x_SRM')] = sample['x']
+                df.iloc[index, df.columns.get_loc('y_SRM')] = sample['y']
 
         progress.advance(task)
 
+    # We consider the x and y (with rolling median filter) in later calculations
+    df = df.rename(columns={"x": "x_old", "y": "y_old"})
+    df = df.rename(columns={"x_SRM": "x", "y_SRM": "y"})
+
     # Write to csv
-    progress.print('[bold green]Done! We saved gaze_positions.csv with {} rows'.format(len(df)))
+    progress.print('[bold green]Done! We saved gp.csv with {} rows'.format(len(df)))
     df.to_csv(output_file_name)
