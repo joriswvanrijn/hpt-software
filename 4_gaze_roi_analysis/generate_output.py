@@ -68,7 +68,7 @@ def generate_output(participant_id, video_id, rois_file, progress, task):
     df_temp = df_temp.drop_duplicates(['Object ID'], keep='last')
     df_temp = df_temp.sort_values(['Object ID'])
     df_temp = df_temp.reset_index(drop=True)
-    df['last_appearance_time'] = df_temp['actual_time']
+    df['last_appearance_time'] = df_temp['actual_time'] + 1/25 # add 1 frame to account for the last frame on which it is shown
 
     # Total appearance duration
     df['total_appearance_duration'] = df['last_appearance_time'] - df['first_appearance_time']
