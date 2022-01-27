@@ -163,7 +163,7 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     progress.print("Done! We will start outputting the dataframe to a csv file. This will take a second.")
     progress.print('[bold green]We are done! The new csv is outputted to {} and contains {} rows.'.format(output_file_name, len(gp)))
 
-    sys.exit()
+    # sys.exit()
 
 def to_lin_time(progress, original_gp, output_file_name, participant_id, video_id):
     first_timestamp = original_gp.actual_time.iloc[0]  
