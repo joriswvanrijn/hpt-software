@@ -6,80 +6,30 @@ import sys
 import statistics
 
 def apply_median_filter_on_coordinates(participant_id, video_id, progress, task):
-    progress.print("[blue]Applying median filter on x and y")
+    progress.print("[blue]Applying median filter on true_x_scaled and true_y_scaled")
 
-    input_file_name = '{}/{}/{}/interpolated_gp.csv'.format(
+    input_file_name = '{}/{}/{}/merged_raw_gp.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
-    output_file_name = '{}/{}/{}/gp.csv'.format(
+    output_file_name = '{}/{}/{}/merged_mf_gp.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
     df = pd.read_csv(input_file_name)
 
-    # Is_valid_gap
-    df['is_valid_gap'] = False
-    df.loc[df['x'].isnull(), 'is_valid_gap'] = True
+    # Apply median filter on true_x_scaled and true_y_scaled
+    df['true_x_scaled_srm'] = df['true_x_scaled'].rolling(3, center=True).median()
+    df['true_y_scaled_srm'] = df['true_y_scaled'].rolling(3, center=True).median()
+    
+    # Set first and last true_x_scaled and true_y_scaled
+    df.iloc[0, df.columns.get_loc('true_x_scaled_srm')] = df.iloc[0, df.columns.get_loc('true_x_scaled')]
+    df.iloc[-1, df.columns.get_loc('true_x_scaled_srm')] = df.iloc[-1, df.columns.get_loc('true_x_scaled')]
+    df.iloc[0, df.columns.get_loc('true_y_scaled_srm')] = df.iloc[0, df.columns.get_loc('true_y_scaled')]
+    df.iloc[-1, df.columns.get_loc('true_y_scaled_srm')] = df.iloc[-1, df.columns.get_loc('true_y_scaled')]
 
-    # For debugging purposes:
-    # print(df[['confidence', 'is_valid_gap', 'true_x_scaled', 'true_y_scaled']][df['is_valid_gap'] == True].head())
-
-    progress.print('We have detected valid gaps')
-    progress.advance(task)
-
-    # Calculate the medians of the coordinates (window=3)
-    # df['may_calculate_SRM'] = False
-    df['x_SRM'] = None
-    df['y_SRM'] = None
-
-    progress.print('[bold yellow]We are starting to calculate the Simple Rolling Median for x and y. This may take a while.')
-
-    progress.update(task, total=(len(df)-1+1))
-
-    counter = 0
-    for index, sample in df.iterrows():
-
-        # Some nice progress output
-        if(counter % 2000 == 0 or counter == 0):
-            progress.print('[bold deep _pink4]Processed: {}/{}'.format(counter, len(df)))
-        counter = counter + 1
-
-        if(sample['is_valid_gap'] == False):
-
-            # change this if we are changing window size > 3 
-            if(index == 0 or index == df.shape[0] - 1):
-                # for first and last row of dataset
-                df.iloc[index, df.columns.get_loc('x_SRM')] = sample['x']
-                df.iloc[index, df.columns.get_loc('y_SRM')] = sample['y']
-                continue
-        
-            elif(df.at[index + 1, 'is_valid_gap'] == False and df.at[index - 1, 'is_valid_gap'] == False):
-                # for all other rows
-                df.iloc[index, df.columns.get_loc('x_SRM')] = statistics.median([
-                    df.at[index - 1, 'x'],
-                    df.at[index, 'x'],
-                    df.at[index + 1, 'x'],
-                ])
-                df.iloc[index, df.columns.get_loc('y_SRM')] = statistics.median([
-                    df.at[index - 1, 'y'],
-                    df.at[index, 'y'],
-                    df.at[index + 1, 'y'],
-                ])
-
-            else:
-                df.iloc[index, df.columns.get_loc('x_SRM')] = sample['x']
-                df.iloc[index, df.columns.get_loc('y_SRM')] = sample['y']
-
-        progress.advance(task)
-
-    # We consider the x and y (with rolling median filter) in later calculations
-    df = df.rename(columns={"x": "x_old", "y": "y_old"})
-    df = df.rename(columns={"x_SRM": "x", "y_SRM": "y"})
-
-    df['frame'] = df['t']*25 + 0.00001
-        # TODO: remove in january 2022
-    df['frame'] = np.ceil(df['frame'])
-    df['frame'] = df['frame'].astype(int)
+    # Remove old true_x_scaled and true_y_scaled and rename true_x_scaled_srm and true_y_scaled_srm
+    df = df.drop(columns=['true_x_scaled', 'true_y_scaled'])
+    df = df.rename(columns={"true_x_scaled_srm": "true_x_scaled", "true_y_scaled_srm": "true_y_scaled"})
 
     # Write to csv
-    progress.print('[bold green]Done! We saved gp.csv with {} rows'.format(len(df)))
+    progress.print('[bold green]Done! We saved to {} with {} rows'.format(output_file_name, len(df)))
     df.to_csv(output_file_name)

@@ -53,8 +53,8 @@ def check_participant_id(id, video_id):
 def prepare_aoi_tasks(progress):
      return [
         progress.add_task("[cyan]2. Merging gaze positions", total=20), # 0
-        progress.add_task("[cyan]3. Identifying gaps in gaze positions", total=1), # 1
-        progress.add_task("[cyan]4. Median filter", total=1), # 2
+        progress.add_task("[cyan]3. Median filter", total=1), # 1
+        progress.add_task("[cyan]4. Identifying gaps in gaze positions", total=1), # 2
         progress.add_task("[cyan]5. Identifying hits", total=50), # 3
         progress.add_task("[cyan]6. Identifying entries and exits", total=50), # 4
         progress.add_task("[cyan]7. Generating output", total=9), # 5

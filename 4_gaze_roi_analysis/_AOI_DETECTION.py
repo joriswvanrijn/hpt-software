@@ -46,13 +46,13 @@ with progress_instance as progress:
     if(we_are_not_skipping_task(2, starting_task, progress, tasks)):
         merge_gaze_positions(participant_id, video_id, progress, tasks[0])
 
-    #### 3) Identify (valid) gaps in the gaze positions data
+    #### 3) Median filter over the true_x_scaled and true_y_scaled 
     if(we_are_not_skipping_task(3, starting_task, progress, tasks)):
-        identify_gaps_in_gaze_positions(participant_id, video_id, progress, tasks[1])
+        apply_median_filter_on_coordinates(participant_id, video_id, progress, tasks[1])
 
-    #### 4) Median filter over the true_x_scaled and true_y_scaled (between the gaps)
+    #### 4) Identify (valid) gaps in the gaze positions data
     if(we_are_not_skipping_task(4, starting_task, progress, tasks)):
-        apply_median_filter_on_coordinates(participant_id, video_id, progress, tasks[2])
+        identify_gaps_in_gaze_positions(participant_id, video_id, progress, tasks[2])
 
     #### 5) With the ROIs and the GPs: identify hits in the ROIs
     if(we_are_not_skipping_task(5, starting_task, progress, tasks)):

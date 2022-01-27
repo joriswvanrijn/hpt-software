@@ -10,13 +10,10 @@ from scipy.interpolate import PchipInterpolator
 import matplotlib.pyplot as plt
 
 def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
-    input_file_name = '{}/{}/{}/merged_raw_gp.csv'.format(
+    input_file_name = '{}/{}/{}/merged_mf_gp.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
-    output_file_name = '{}/{}/{}/merged_surfaces_with_gaps.csv'.format(
-        __constants.input_folder, participant_id, video_id)
-
-    output_file_name_2 = '{}/{}/{}/interpolated_gp.csv'.format(
+    output_file_name = '{}/{}/{}/gp.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
     text_file = '../outputs/{}/{}/number_of_filtered_rows.txt'.format(
@@ -28,6 +25,7 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
 
     df = pd.read_csv(input_file_name)
     total_count = df.shape[0]
+
     # Save the size of the original data set
     with open(text_file,"w+") as f:
         f.write('Total amount of rows: {} \n'.format(total_count, __constants.confidence_treshold))
@@ -137,7 +135,7 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
             interpolatedRows, percentage, percentage_nan_rows))
 
     # Interpolate to linear time scale
-    gp = to_lin_time(progress, df, output_file_name_2, participant_id, video_id)
+    gp = to_lin_time(progress, df, output_file_name, participant_id, video_id)
     
     # Gaps > 75ms +/- (__constants.add_gap_samples) seconds naar NaN
     # Now, check in the original dataframe where we have gaps (we saved this before)
@@ -153,16 +151,14 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
              (gp['t'] < timestamp[1] + __constants.add_gap_samples), 'y'] = np.NaN
 
     # Save the GP to a file
-    gp.to_csv(output_file_name_2)
+    gp.to_csv(output_file_name)
     
-    # Save how many gaps we set to NaN again
-    # TODO:
-
-    # sys.exit()
+    # TODO: Save how many gaps we set to NaN again
 
     progress.print("Done! We will start outputting the dataframe to a csv file. This will take a second.")
-    df.to_csv(output_file_name, index=False)
-    progress.print('[bold green]We are done! The new csv is outputted to {} and contains {} rows.'.format(output_file_name, len(df)))
+    progress.print('[bold green]We are done! The new csv is outputted to {} and contains {} rows.'.format(output_file_name, len(gp)))
+
+    sys.exit()
 
 def to_lin_time(progress, original_gp, output_file_name, participant_id, video_id):
     first_timestamp = original_gp.actual_time.iloc[0]  
@@ -193,5 +189,9 @@ def to_lin_time(progress, original_gp, output_file_name, participant_id, video_i
 
     gazeInt.loc[:, 'x'] = interp(gp.actual_time, gp.true_x_scaled)
     gazeInt.loc[:, 'y'] = interp(gp.actual_time, gp.true_y_scaled)
+
+    # Add frame numbers
+    gazeInt['frame'] = np.ceil((gazeInt['t'] * 25) + 0.00001)
+    gazeInt['frame'] = gazeInt['frame'].astype(int)
 
     return gazeInt

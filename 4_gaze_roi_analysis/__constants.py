@@ -2,7 +2,7 @@ import math
 
 ## Input folder
 # input_folder = '/Users/joris/Development/HPT/pilot-data' # path on joris machine
-input_folder = '/Users/treyescan/Development/pilot-data' # path on yasmin machine
+# input_folder = '/Users/treyescan/Development/pilot-data' # path on yasmin machine
 # input_folder = '/Users/treyescan/Development/validatietaak-data-conf0.8' # path validatietaak on yasmin machine
 # input_folder = '/Users/treyescan/Development/validatietaak-data-dummy' # path dummy validatietaak on yasmin machine
 
@@ -17,7 +17,7 @@ px2deg = 0.017361783368346345
 sample_rate_ET = 240
 
 ## Identifying gaps
-confidence_treshold = 0.8 # %
+confidence_treshold = 0.7 # %
 valid_gap_treshold = 0.075 # s
 add_gap_samples = 0.1 # s (time to "stretch" to valid gaps, both before and after the gap)
 
