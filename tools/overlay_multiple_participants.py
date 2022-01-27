@@ -58,7 +58,7 @@ deel = args.deel
 offset = args.offset
 start_frame = args.start_frame - 1
 
-gaze_position_files = glob.glob("{}/*/{}/gaze_positions.csv".format(
+gaze_position_files = glob.glob("{}/*/{}/gp.csv".format(
     __constants.input_folder, deel))
 
 dfs_gp = []

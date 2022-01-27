@@ -1,6 +1,7 @@
 from re import X
 import __constants
 import pandas as pd
+import numpy as np
 import sys
 import statistics
 
@@ -73,6 +74,11 @@ def apply_median_filter_on_coordinates(participant_id, video_id, progress, task)
     # We consider the x and y (with rolling median filter) in later calculations
     df = df.rename(columns={"x": "x_old", "y": "y_old"})
     df = df.rename(columns={"x_SRM": "x", "y_SRM": "y"})
+
+    df['frame'] = df['t']*25 + 0.00001
+        # TODO: remove in january 2022
+    df['frame'] = np.ceil(df['frame'])
+    df['frame'] = df['frame'].astype(int)
 
     # Write to csv
     progress.print('[bold green]Done! We saved gp.csv with {} rows'.format(len(df)))

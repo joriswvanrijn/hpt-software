@@ -9,7 +9,7 @@ def merge_gaze_positions(participant_id, video_id, progress, task):
     surfaces_base_name = '{}/{}/{}/gaze_positions_on_surface_Surface{:d}WB.csv'
     dummy_surface_base_name = '{}/{}/{}/gaze_positions_on_surface_dummysurface.csv'
     ijk_surface_base_name = '{}/{}/{}/gaze_positions_on_surface_ijksurface.csv'
-    output_file_name = '{}/{}/{}/merged_surfaces.csv'.format(
+    output_file_name = '{}/{}/{}/merged_raw_gp.csv'.format(
         __constants.input_folder, participant_id, video_id)
     surfaces = __constants.surfaces
 

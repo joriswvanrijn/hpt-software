@@ -10,7 +10,7 @@ from scipy.interpolate import PchipInterpolator
 import matplotlib.pyplot as plt
 
 def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
-    input_file_name = '{}/{}/{}/merged_surfaces.csv'.format(
+    input_file_name = '{}/{}/{}/merged_raw_gp.csv'.format(
         __constants.input_folder, participant_id, video_id)
 
     output_file_name = '{}/{}/{}/merged_surfaces_with_gaps.csv'.format(
