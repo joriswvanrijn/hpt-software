@@ -26,6 +26,11 @@ def identify_gaps_in_gaze_positions(participant_id, video_id, progress, task):
     df = pd.read_csv(input_file_name)
     total_count = df.shape[0]
 
+    # Rolling average on confidence
+    df['confidence'] = df['confidence'].rolling(3, center=True).mean()
+    df.iloc[0, df.columns.get_loc('confidence')] = df.iloc[0, df.columns.get_loc('confidence')]
+    df.iloc[-1, df.columns.get_loc('confidence')] = df.iloc[-1, df.columns.get_loc('confidence')]
+
     # Save the size of the original data set
     with open(text_file,"w+") as f:
         f.write('Total amount of rows: {} \n'.format(total_count, __constants.confidence_treshold))
