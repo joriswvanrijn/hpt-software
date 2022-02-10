@@ -49,7 +49,10 @@ def identify_entries_and_exits(participant_id, video_id, rois_file, progress, ta
 
             if(hit_row[roi] == 0 and len(entries_and_exits[roi]) % 2 != 0):
                 # If we are finding a 0 and we may register an exit, do it
-                entries_and_exits[roi].append(hit_row['t'])
+                # The timestamp needed is not the current one (first 0 after gap, where 1 = non-hit)
+                # But the previous one (last 1 of a hap, where 1 = hit)
+                timestamp = df_gps_x_rois.iloc[i - 1, df_gps_x_rois.columns.get_loc('t')]
+                entries_and_exits[roi].append(timestamp)
     
     progress.advance(task)
 
