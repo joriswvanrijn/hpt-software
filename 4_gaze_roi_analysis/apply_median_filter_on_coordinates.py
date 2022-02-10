@@ -33,3 +33,5 @@ def apply_median_filter_on_coordinates(participant_id, video_id, progress, task)
     # Write to csv
     progress.print('[bold green]Done! We saved to {} with {} rows'.format(output_file_name, len(df)))
     df.to_csv(output_file_name)
+
+    progress.advance(task)
