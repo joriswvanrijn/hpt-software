@@ -25,7 +25,7 @@ video_path = args.video
 data_path = args.data # ROI data
 participant_folder = args.participant
 offset = args.offset
-start_frame = args.start_frame - 1
+start_frame = args.start_frame 
 
 gaze_data_path = '{}/gp.csv'.format(participant_folder)
 annotations_data_path = '{}/annotations.csv'.format(participant_folder)
@@ -50,25 +50,26 @@ df = pd.read_csv(data_path, header=0)
 df_gp = pd.read_csv(gaze_data_path, header=0)
 df_a = pd.read_csv(annotations_data_path, header=0)
 
+# TODO: remove in january 2022
+# df_gp['frame'] = np.ceil(df_gp['frame'])
+# df_gp['frame'] = df_gp['frame'].astype(int)
+
 # Prepare data
 df = prepare_aois_df(df)
 
-# NOTE: the timestamps of the merged gaze positions are normalized in merge_gaze_positions
+# # NOTE: the timestamps of the merged gaze positions are normalized in merge_gaze_positions
 
+# Create a column for "Frames" in the annotation file
 if df_a['timestamp'][0] < 0:
-    df_a['actual_time'] = df_a['timestamp'] + abs(df_gp.loc[0, 'gaze_timestamp'])
+    df_a['actual_time'] = df_a['timestamp'] + abs(df_gp.loc[0, 't'])
 else:
-    df_a['actual_time'] = df_a['timestamp'] - abs(df_gp.loc[0, 'gaze_timestamp'])
+    df_a['actual_time'] = df_a['timestamp'] - abs(df_gp.loc[0, 't'])
 
 df_a['frame'] = df_a['actual_time']*25 + 0.00001
 df_a['frame'] = df_a['frame'].astype(int)
 
-# TODO: remove in january 2022
-df_gp['frame'] = np.ceil(df_gp['frame'])
-df_gp['frame'] = df_gp['frame'].astype(int)
-
-# print(df_a.head())
-# sys.exit()
+# # print(df_a.head())
+# # sys.exit()
 
 # Read video
 cap = cv2.VideoCapture(video_path)
@@ -171,7 +172,7 @@ while(cap.isOpened()):
                 p2 = (int(x2), int(y2))
 
                 cv2.rectangle(frame, (p1[0], p1[1] - 40), (p2[0], p1[1]), color, -1, 1)
-                cv2.rectangle(frame, p1, p2, color, 2, 1)
+                cv2.rectangle(frame, p1, p2, color, 5, 1)
 
                 cv2.putText(frame, "{}".format(overlay['Object ID']), (p1[0], p1[1] - 20), 
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA);
@@ -182,7 +183,7 @@ while(cap.isOpened()):
                 new_p1 = (int(new_x1), int(new_y1))
                 new_p2 = (int(new_x2), int(new_y2))
 
-                cv2.rectangle(frame, new_p1, new_p2, color2, 2, 1)
+                cv2.rectangle(frame, new_p1, new_p2, color2, 5, 1)
 
             # Display the resulting frame
             frameToDisplay = ResizeWithAspectRatio(frame, width=FRAME_WIDTH) 

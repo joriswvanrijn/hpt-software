@@ -67,10 +67,7 @@ def identify_hits(participant_id, video_id, rois_file, progress, task):
 
         # Fetch ROIS on the same frame as the GP, 
         # if no rois are found, go to the next gaze position
-        # rois frame starting at frame 0, gp frame starting at frame 1
-        # this is deliberate, because in gp frame 1 lay gaze positions between 
-        # timestamps 0-0.04, and rois frame 1 corresponds
-        # with timestamp 0.04. Otherwise timestamps will lay one frame behind
+        # rois frame and gp frame both starting at frame 0
         rois_to_consider = df_rois[df_rois['frame'] == gp['frame']]
 
         if(len(rois_to_consider) == 0):

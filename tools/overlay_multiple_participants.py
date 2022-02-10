@@ -56,7 +56,7 @@ video_path = args.video
 data_path = args.data # ROI data
 deel = args.deel
 offset = args.offset
-start_frame = args.start_frame - 1
+start_frame = args.start_frame
 
 gaze_position_files = glob.glob("{}/*/{}/gp.csv".format(
     __constants.input_folder, deel))
@@ -197,7 +197,7 @@ while(cap.isOpened()):
                 p2 = (int(x2), int(y2))
 
                 cv2.rectangle(frame, (p1[0], p1[1] - 40), (p2[0], p1[1]), color, -1, 1)
-                cv2.rectangle(frame, p1, p2, color, 2, 1)
+                cv2.rectangle(frame, p1, p2, color, 5, 1)
 
                 cv2.putText(frame, "{}".format(overlay['Object ID']), (p1[0], p1[1] - 20), 
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA);
@@ -208,7 +208,7 @@ while(cap.isOpened()):
                 new_p1 = (int(new_x1), int(new_y1))
                 new_p2 = (int(new_x2), int(new_y2))
 
-                cv2.rectangle(frame, new_p1, new_p2, color2, 2, 1)
+                cv2.rectangle(frame, new_p1, new_p2, color2, 5, 1)
 
             # Display the resulting frame
             frameToDisplay = ResizeWithAspectRatio(frame, width=FRAME_WIDTH) 
