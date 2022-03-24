@@ -1,0 +1,99 @@
+from cmath import isnan
+import cv2, sys, math
+from numpy import mat
+import pandas as pd
+
+# open video
+video_path = './videos/val.mp4'
+cap = cv2.VideoCapture(video_path)
+total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+# video to be saved
+out = cv2.VideoWriter(
+    'video_with_labels_and_gaze.mp4',
+    cv2.VideoWriter_fourcc(*'XVID'),
+    cap.get(cv2.CAP_PROP_FPS),
+    (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+)
+
+# read all events from remodnav
+gp = pd.read_csv('./outputs/gp.tsv', sep="\t", header=None)
+events = pd.read_csv('./outputs/events.tsv', sep="\t")
+
+# create an offset column, based on onset + duration
+events['offset'] = events['onset'] + events['duration']
+
+# convert coordinates (in GP the coordinates consider 0,0 as center)
+gp[0] = gp[0] + 2880 # x
+gp[1] = abs(gp[1] - 600) # y
+
+# loop over each frame
+current_frame = 0
+while(cap.isOpened()): 
+    key = cv2.waitKey(1) & 0xff
+
+    # quit on Q
+    if key == ord('q'):
+        break
+
+    ret, frame = cap.read()
+
+    # compute current time (video sample rate = 25Hz)
+    current_time = current_frame / 25
+
+    # plot the GP's (gp file sample rate = 240Hz)
+
+    # TODO: make sure that the GP's are the same as in overlay_single_participant
+    start_index_of_gp = int(round(current_time / (1/240)))
+    end_index_of_gp = int(round((current_time + 1/25) / (1/240)))
+
+    gps_to_display = gp[start_index_of_gp:end_index_of_gp]
+
+    # reset x and y
+    x = -1
+    y = -1
+
+    for index, gp_sample in gps_to_display.iterrows():
+        if(not math.isnan(gp_sample[0]) and not math.isnan(gp_sample[1])):
+            x = int(gp_sample[0])
+            y = int(gp_sample[1])
+            cv2.circle(frame, (x, y), 20, (255, 255, 255), -1)  
+
+    # select all events for which: onset <= current_time <= offset
+    events_to_show = events[(events['onset'] <= current_time) & (current_time <= events['offset'])]
+
+    nr_events_found = events_to_show.shape[0]
+    print('found {} events'.format(nr_events_found))
+
+    # if events are found, plot them on the screen
+    if(nr_events_found > 0 and x > 0 and y > 0):
+        label = events_to_show.iloc[0, events_to_show.columns.get_loc('label')]
+
+        color = (220, 117, 0)
+
+        if(label == 'SACC'):
+            color = (72, 206, 43)
+        elif(label == 'PURS'):
+            color = (5, 164, 255)
+        elif(label == 'LPSO'):
+            color =  (242, 241, 94)
+
+        cv2.rectangle(frame, (x + 20, y + 20), (x + 170, y + 100), color, -1, 1)
+        cv2.putText(frame, label, (x + 40, y + 70), cv2.FONT_HERSHEY_SIMPLEX, 
+            1.5, (255, 255, 255), 4, cv2.LINE_AA);
+
+    # display frame
+    cv2.imshow('Frame', frame) 
+    cv2.moveWindow('Frame', 20, 20)
+
+    # write frame
+    print('saving frame {}/{}'.format(current_frame, total_frames))
+    out.write(frame)
+    
+    # increase frame number
+    current_frame = current_frame + 1
+
+
+# video opslaan
+cap.release()
+out.release()

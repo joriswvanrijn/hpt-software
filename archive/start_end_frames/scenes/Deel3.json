@@ -1,0 +1,9 @@
+[
+  { "label": "5_willemspark_1", "start": 1, "end": 2375 }, 
+  { "label": "10_hoofdweg_1", "start": 2400, "end": 3279 },
+  { "label": "3_zeilstraat_4", "start": 3304, "end": 5139 },
+  { "label": "11_repeterend", "start": 5164, "end": 6245 },
+  { "label": "1_vanbaerle_3", "start": 6270, "end": 7702 },
+  { "label": "6_rihaarlem_1", "start": 7727, "end": 8521 },
+  { "label": "9_admiraalderuijter_2b", "start": 8546, "end": 11827 }
+]
