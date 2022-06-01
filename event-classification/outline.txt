@@ -1,0 +1,17 @@
+- In gp.csv nieuwe kolom aanmaken met deg/sec
+    > de hoek tussen de 2 twee positie vectoren (x, y, z) coordinaat te berekenen
+    > dat delen door constante tijd tussen 2 punten
+- Acceleratie uitrekenen per punt in deg/sec^2
+- (event classification)
+
+
+v1 = (x1, y1, z1)
+v2 = (x2, y2, z2)
+inner_product = np.dot(v1, v2)
+
+cos𝜙 =   𝑎⋅𝑏
+        _____
+        |𝑎||𝑏|
+
+https://www.omnicalculator.com/math/angle-between-two-vectors
+https://math.stackexchange.com/questions/654315/how-to-convert-a-dot-product-of-two-vectors-to-the-angle-between-the-vectors
