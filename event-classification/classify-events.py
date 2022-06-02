@@ -3,6 +3,8 @@ import __constants
 import numpy as np
 import pandas as pd
 
+import matplotlib.pyplot as plt
+
 def preprocess_single_gaze_position(row) -> List[float]:
     # Previous vector
     a = np.array([row['previous_x'], row['previous_y'], __constants.d])
@@ -42,6 +44,9 @@ def preprocess_gaze_positions(gp: pd.DataFrame) -> pd.DataFrame:
 
 gp = pd.read_csv('gp.csv') # Load all gaze positions
 gp = preprocess_gaze_positions(gp) # Add velocities/accelerations column to gp
-print(gp)
+
+# plt.plot(gp.t, gp.velocity, 'r')
+# plt.plot(gp.t, gp.acceleration, 'g')
+# plt.show()
 
 gp.to_csv('gp.temp.csv')
