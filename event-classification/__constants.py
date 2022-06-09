@@ -46,3 +46,9 @@ surfaces[6] = {'left_border': 3396, 'right_border': 4094 }
 surfaces[7] = {'left_border': 3972, 'right_border': 4671 }
 surfaces[8] = {'left_border': 4548, 'right_border': 5308 }
 surfaces[9] = {'left_border': 5067, 'right_border': 5760 }
+
+## Event classification
+max_velocity_treshold = 900 # deg/s
+max_acceleration_treshold = 100000 # deg/s^2
+
+### IVTFIX
