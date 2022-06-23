@@ -1,0 +1,29 @@
+
+$left_app_sac           
+1       1                              
+2       0               
+3       0                   
+4       1                                     
+5       1
+6       1
+7       0
+8       0
+9       0
+10      0
+
+$i = 5
+$NS_LEFT = 2
+
+$as_para_left
+    1   2   3   .... 62
+1   0   0   0
+2   4   0   0
+
+$maxvelsac_left
+# j = i van de max vel sample
+    1       2       3           4
+1   lvd(j)  j       lvdx(j)     lvdy(j)
+2   lvd(j)  j       lvdx(j)     lvdy(j)
+3   lvd(j)  j       lvdx(j)     lvdy(j)
+4   lvd(j)  j       lvdx(j)     lvdy(j)
+5   3        8      13          18          23    28   33  38   43    48   53  58
