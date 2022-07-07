@@ -11,8 +11,14 @@ def preprocess_single_gaze_position(row) -> List[float]:
     b = np.array([row['x'], row['y'], __constants.d])
 
     # By using dot product, calculate angle between the two vectors: cos 𝜙 = (a⋅b) / (|a||b|)
-    cos_of_phi = np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+    denominator = round(np.dot(a, b), 7)
+    divisor = round(np.linalg.norm(a) * np.linalg.norm(b), 7)
+
+    cos_of_phi = denominator / divisor
     phi = np.rad2deg(np.arccos(cos_of_phi))
+    
+    # print('n: ', np.dot(a, b))
+    # print('d: ', (np.linalg.norm(a) * np.linalg.norm(b)))
 
     # Calculate the velocity (deg/s) and acceleration (deg/s^2) by dividing by constant sample rate
     velocity = phi / (1/__constants.sample_rate_ET)
