@@ -79,7 +79,7 @@ def overlay_video(gp: pd.DataFrame, events: pd.DataFrame, video_path: str, video
                 cv2.circle(frame, (x, y), 20, (255, 255, 255), -1)  
 
         # select all events for which: onset <= current_time <= offset
-        events_to_show = events[(events['onset'] <= current_time) & (current_time <= events['offset'])]
+        events_to_show = events[(events['start_time'] <= current_time) & (current_time <= events['end_time'])]
 
         nr_events_found = events_to_show.shape[0]
         print('found {} events'.format(nr_events_found))

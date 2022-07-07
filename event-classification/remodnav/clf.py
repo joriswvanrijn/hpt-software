@@ -9,6 +9,7 @@
 # ## ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 import sys
 import numpy as np
+import pandas as pd
 from statsmodels.robust.scale import mad
 from scipy import signal
 from scipy import ndimage
@@ -206,10 +207,10 @@ class EyegazeClassifier(object):
     ]
 
     def __init__(self,
-                 sampling_rate=240,
+                 sampling_rate=120,
                  pursuit_velthresh=2.0,
                  noise_factor=5.0,
-                 velthresh_startvelocity=300.0,
+                 velthresh_startvelocity=5.0,
                  min_intersaccade_duration=0.04,
                  min_saccade_duration=0.01,
                  max_initial_saccade_freq=2.0,
@@ -259,8 +260,7 @@ class EyegazeClassifier(object):
         if not len(data):
             return np.nan, np.nan, np.nan, np.nan
         pv = data['vel'].max()
-        # amp = (((data[0]['x'] - data[-1]['x']) ** 2 + \
-        #         (data[0]['y'] - data[-1]['y']) ** 2) ** 0.5) * self.px2deg
+        amp = 0
         # amp = v1 v2 dotproduct
         medvel = np.median(data['vel'])
         avgvel = np.mean(data['vel'])
@@ -768,12 +768,7 @@ class EyegazeClassifier(object):
                 eend)
 
     def _get_velocities(self, data):
-        # euclidean distance between successive coordinate samples
-        # no entry for first datapoint!
-        velocities = (np.diff(data['x']) ** 2 + np.diff(data['y']) ** 2) ** 0.5
-        # convert from px/sample to deg/s
-        velocities *= self.px2deg * self.sr
-        return velocities
+        return data['vel']
 
     def prepare(
             self,
@@ -788,34 +783,17 @@ class EyegazeClassifier(object):
           Additionally a warning will be issued to indicate a potentially
           inappropriate filter setup.
         """
-       
-        print(data);
-        sys.exit();
 
-        # replace "too fast" velocities with previous velocity
-        # add missing first datapoint
-        filtered_velocities = [float(0)]
-        for vel in velocities:
-            if vel > max_vel:  # deg/s
-                # ignore very fast velocities
-                lgr.warning(
-                    'Computed velocity exceeds threshold. '
-                    'Inappropriate filter setup? [%.1f > %.1f deg/s]',
-                    vel,
-                    max_vel)
-                vel = filtered_velocities[-1]
-            filtered_velocities.append(vel)
-        velocities = np.array(filtered_velocities)
+        column_names = ['med_vel', 'vel', 'accel', 'x', 'y']
+        df = pd.DataFrame(columns = column_names)
 
-        arrs = [velocities]
-        names = ['med_vel']
-        arrs.extend([
-            velocities,
-            acceleration,
-            data['x'],
-            data['y']])
-        names.extend(['vel', 'accel', 'x', 'y'])
-        return np.core.records.fromarrays(arrs, names=names)
+        df['med_vel'] = data['velocity']
+        df['vel'] = data['velocity']
+        df['accel'] = data['acceleration']
+        df['x'] = data['x']
+        df['y'] = data['y']
+
+        return df.to_records(index=False)
 
     def show_gaze(self, data=None, pp=None, events=None, show_vels=True):
         colors = {
