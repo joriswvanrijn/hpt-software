@@ -24,7 +24,12 @@ def preprocess_single_gaze_position(row) -> List[float]:
     velocity = phi / (1/__constants.sample_rate_ET)
     acceleration = phi / (1/__constants.sample_rate_ET)**2
 
-    return [row['t'], row['x'], row['y'], row['frame'], velocity, acceleration]
+    # this is the return we need for prepocessing our dat ain classify-events
+    if('t' in row):
+        return [row['t'], row['x'], row['y'], row['frame'], velocity, acceleration]
+    
+    # this is the return we need for _get_velocities in remodnav
+    return velocity
 
 def preprocess_gaze_positions(gp: pd.DataFrame) -> pd.DataFrame:
     '''Adds columns with velocities (deg/sec) and accelerations(deg/sec^2)

@@ -82,7 +82,7 @@ def overlay_video(gp: pd.DataFrame, events: pd.DataFrame, video_path: str, video
         events_to_show = events[(events['start_time'] <= current_time) & (current_time <= events['end_time'])]
 
         nr_events_found = events_to_show.shape[0]
-        print('found {} events'.format(nr_events_found))
+        # print('found {} events'.format(nr_events_found))
 
         # if events are found, plot them on the screen
         if(nr_events_found > 0 and x > 0 and y > 0):
@@ -108,7 +108,7 @@ def overlay_video(gp: pd.DataFrame, events: pd.DataFrame, video_path: str, video
         cv2.moveWindow('Frame', 20, 20)
 
         # write frame
-        print('saving frame {}/{}'.format(current_frame, total_frames))
+        # print('saving frame {}/{}'.format(current_frame, total_frames))
         out.write(frame)
         
         # increase frame number

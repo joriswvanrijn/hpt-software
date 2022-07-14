@@ -2,6 +2,7 @@ import pandas as pd
 from _preprocess import preprocess_gaze_positions
 from remodnav.clf import EyegazeClassifier
 from _tools import overlay_video
+import matplotlib.pyplot as plt
 
 input_file = 'gp_deel2.csv'
 
@@ -21,5 +22,8 @@ events_pd = pd.DataFrame(events)
 events_pd.to_csv('events_{}.csv'.format(input_file)) # checkpoint 2
 events_pd = pd.read_csv('events_{}.csv'.format(input_file))
 
-'''3. Overlay on video'''
+'''3. Display stats'''
+print(events_pd['label'].value_counts())
+
+'''4. Overlay on video'''
 overlay_video(gp, events_pd, '../videos/Deel2.mp4', 'output.mp4')

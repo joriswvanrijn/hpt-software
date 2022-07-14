@@ -23,6 +23,8 @@ from math import (
 import logging
 lgr = logging.getLogger('remodnav.clf')
 
+sys.path.append("..")
+from _preprocess import preprocess_single_gaze_position
 
 def find_peaks(vels, threshold):
     """Find above-threshold time periods
@@ -207,13 +209,13 @@ class EyegazeClassifier(object):
     ]
 
     def __init__(self,
-                 sampling_rate=120,
-                 pursuit_velthresh=2.0,
-                 noise_factor=5.0,
-                 velthresh_startvelocity=5.0,
-                 min_intersaccade_duration=0.04,
+                 sampling_rate=240,
+                 pursuit_velthresh=100000, #  pursuit_velthresh=2,
+                 noise_factor=2.0, # noise_factor=5.0,
+                 velthresh_startvelocity=300.0,
+                 min_intersaccade_duration=0.0, #  min_intersaccade_duration=0.04,
                  min_saccade_duration=0.01,
-                 max_initial_saccade_freq=2.0,
+                 max_initial_saccade_freq=4.0, #  max_initial_saccade_freq=2.0,
                  saccade_context_window_length=1.0,
                  max_pso_duration=0.04,
                  min_fixation_duration=0.04,
@@ -752,6 +754,7 @@ class EyegazeClassifier(object):
         # submit
         for ev in merged_evs:
             label = 'PURS' if ev[0] else 'FIXA'
+            # label = 'FIXA' if ev[0] else 'FIXA'
             # +1 to compensate for the shift in the velocity
             # vector index
             estart = start + ev[1]
@@ -768,7 +771,22 @@ class EyegazeClassifier(object):
                 eend)
 
     def _get_velocities(self, data):
-        return data['vel']
+        # 0. First transform numpy to pandas
+        df = pd.DataFrame(data, columns = ['med_vel', 'vel', 'accel', 'x', 'y'])
+
+        # 1. create new column previous_x and previous_y (shifting x and y)
+        df['previous_x'] = df['x'].shift(1)
+        df['previous_y'] = df['y'].shift(1)
+
+        # 2. calculate velocity with lambda func
+        velocities = df.apply(lambda row: 
+            preprocess_single_gaze_position(row), 
+            axis=1,
+            result_type='expand'
+        )
+
+        # 3. Return velocities to remodnav
+        return velocities.to_numpy()
 
     def prepare(
             self,
