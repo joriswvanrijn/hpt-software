@@ -7,9 +7,7 @@
 #   copyright and license terms.
 #
 # ## ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
-import sys
 import numpy as np
-import pandas as pd
 from statsmodels.robust.scale import mad
 from scipy import signal
 from scipy import ndimage
@@ -23,8 +21,22 @@ from math import (
 import logging
 lgr = logging.getLogger('remodnav.clf')
 
-sys.path.append("..")
-from _preprocess import preprocess_single_gaze_position
+
+def deg_per_pixel(screen_size, viewing_distance, screen_resolution):
+    """Determine `px2deg` factor for EyegazeClassifier
+
+    Parameters
+    ----------
+    screen_size : float
+      Either vertical or horizontal dimension of the screen in any unit.
+    viewing_distance : float
+      Viewing distance from the screen in the same unit as `screen_size`.
+    screen_resolution : int
+      Number of pixels along the dimensions reported for `screen_size`.
+    """
+    return degrees(atan2(.5 * screen_size, viewing_distance)) / \
+        (.5 * screen_resolution)
+
 
 def find_peaks(vels, threshold):
     """Find above-threshold time periods
@@ -209,18 +221,20 @@ class EyegazeClassifier(object):
     ]
 
     def __init__(self,
-                 sampling_rate=240,
-                 pursuit_velthresh=2, #  pursuit_velthresh=2,
-                 noise_factor=5.0, # noise_factor=5.0,
+                 px2deg,
+                 sampling_rate,
+                 pursuit_velthresh=2.0,
+                 noise_factor=5.0,
                  velthresh_startvelocity=300.0,
-                 min_intersaccade_duration=0.04, #  min_intersaccade_duration=0.04,
+                 min_intersaccade_duration=0.04,
                  min_saccade_duration=0.01,
-                 max_initial_saccade_freq=2.0, #  max_initial_saccade_freq=2.0,
+                 max_initial_saccade_freq=2.0,
                  saccade_context_window_length=1.0,
                  max_pso_duration=0.04,
                  min_fixation_duration=0.04,
                  min_pursuit_duration=0.04,
                  lowpass_cutoff_freq=4.0):
+            self.px2deg = px2deg
             self.sr = sr = sampling_rate
             self.velthresh_startvel = velthresh_startvelocity
             self.lp_cutoff_freq = lowpass_cutoff_freq
@@ -262,8 +276,8 @@ class EyegazeClassifier(object):
         if not len(data):
             return np.nan, np.nan, np.nan, np.nan
         pv = data['vel'].max()
-        amp = 0
-        # amp = v1 v2 dotproduct
+        amp = (((data[0]['x'] - data[-1]['x']) ** 2 + \
+                (data[0]['y'] - data[-1]['y']) ** 2) ** 0.5) * self.px2deg
         medvel = np.median(data['vel'])
         avgvel = np.mean(data['vel'])
         return amp, pv, medvel, avgvel
@@ -333,8 +347,6 @@ class EyegazeClassifier(object):
         # find threshold velocities
         sac_peak_med_velthresh, sac_onset_med_velthresh = \
             self.get_adaptive_saccade_velocity_velthresh(data['med_vel'])
-            # med vel = median filter velocities
-
         lgr.info(
             'Global saccade MEDIAN velocity thresholds: '
             '%.1f, %.1f (onset, peak)',
@@ -475,9 +487,6 @@ class EyegazeClassifier(object):
                 data['vel'][sacc_end:sacc_end + self.max_pso_dur],
                 sac_onset_velthresh,
                 sac_peak_velthresh)
-
-            print(pso)
-            
             if pso:
                 pso_label, pso_end = pso
                 lgr.debug('Found %s [%i, %i]',
@@ -756,8 +765,7 @@ class EyegazeClassifier(object):
 
         # submit
         for ev in merged_evs:
-            # label = 'PURS' if ev[0] else 'FIXA'
-            label = 'FIXA' if ev[0] else 'FIXA'
+            label = 'PURS' if ev[0] else 'FIXA'
             # +1 to compensate for the shift in the velocity
             # vector index
             estart = start + ev[1]
@@ -774,47 +782,137 @@ class EyegazeClassifier(object):
                 eend)
 
     def _get_velocities(self, data):
-        # 0. First transform numpy to pandas
-        df = pd.DataFrame(data, columns = ['med_vel', 'vel', 'accel', 'x', 'y'])
+        # euclidean distance between successive coordinate samples
+        # no entry for first datapoint!
+        velocities = (np.diff(data['x']) ** 2 + np.diff(data['y']) ** 2) ** 0.5
+        # convert from px/sample to deg/s
+        velocities *= self.px2deg * self.sr
+        return velocities
 
-        # 1. create new column previous_x and previous_y (shifting x and y)
-        df['previous_x'] = df['x'].shift(1)
-        df['previous_y'] = df['y'].shift(1)
-
-        # 2. calculate velocity with lambda func
-        velocities = df.apply(lambda row: 
-            preprocess_single_gaze_position(row), 
-            axis=1,
-            result_type='expand'
-        )
-
-        # 3. Return velocities to remodnav
-        return velocities.to_numpy()
-
-    def prepare(
+    def preproc(
             self,
             data,
+            min_blink_duration=0.02,
+            dilate_nan=0.01,
+            median_filter_length=0.05,
+            savgol_length=0.019,
+            savgol_polyord=2,
             max_vel=1000.0):
         """
         Parameters
         ----------
+        min_blink_duration : float
+          In seconds. Any signal loss shorter than this duration will not be
+          considered for `dilate_nan`.
+        dilate_nan : float
+          Duration by which to dilate a blink window (missing data segment) on
+          either side (in seconds).
+        median_filter_length : float
+          Filter window length in seconds.
+        savgol_length : float
+          Filter window length in seconds.
+        savgol_polyord : int
+          Filter polynomial order used to fit the samples.
         max_vel : float
           Maximum velocity in deg/s. Any velocity value larger than this
           threshold will be replaced by the previous velocity value.
           Additionally a warning will be issued to indicate a potentially
           inappropriate filter setup.
         """
+        # convert params in seconds to #samples
+        dilate_nan = int(dilate_nan * self.sr)
+        min_blink_duration = int(min_blink_duration * self.sr)
+        # sanity check window length - it needs to be odd, and greater than the
+        # polynomial order of the Savitzgy-Golay filter
+        if (int(savgol_length * self.sr) % 2 != 1 or
+            int(savgol_length * self.sr) < savgol_polyord) and \
+                savgol_length != 0.0:
+            raise ValueError("\n"\
+                "Inappropriate window size for Savitzgy-Golay "\
+                "filter. Please adjust --savgol-length such that the "\
+                "formula 'savgol-length x sampling rate' results in a "\
+                "number that can be rounded down to an odd integer that "\
+                "is higher than {}. Currently, --savgol-length is {} and "\
+                "the sampling rate is {} "\
+                "which results in {}.".format(savgol_polyord,
+                                              savgol_length,
+                                              self.sr,
+                                              int(savgol_length * self.sr)))
+        savgol_length = int(savgol_length * self.sr)
+        median_filter_length = int(median_filter_length * self.sr)
+        # in-place spike filter
+        data = filter_spikes(data)
 
-        column_names = ['med_vel', 'vel', 'accel', 'x', 'y']
-        df = pd.DataFrame(columns = column_names)
+        # for signal loss exceeding the minimum blink duration, add additional
+        # dilate_nan at either end
+        # find clusters of "no data"
+        if dilate_nan:
+            lgr.info('Dilate NaN segments by %i samples', dilate_nan)
+            mask = get_dilated_nan_mask(
+                data['x'],
+                dilate_nan,
+                min_blink_duration)
+            data['x'][mask] = np.nan
+            data['y'][mask] = np.nan
 
-        df['med_vel'] = data['velocity']
-        df['vel'] = data['velocity']
-        df['accel'] = data['acceleration']
-        df['x'] = data['x']
-        df['y'] = data['y']
+        if savgol_length:
+            lgr.info(
+                'Smooth coordinates with Savitzy-Golay filter (len=%i, ord=%i)',
+                savgol_length, savgol_polyord)
+            for i in ('x', 'y'):
+                data[i] = savgol_filter(data[i], savgol_length, savgol_polyord)
 
-        return df.to_records(index=False)
+        # velocity calculation, exclude velocities over `max_vel`
+        # no entry for first datapoint!
+        velocities = self._get_velocities(data)
+
+        if median_filter_length:
+            lgr.info(
+                'Add velocities computed from median-filtered (len=%i) '
+                'coordinates', median_filter_length)
+            med_velocities = np.zeros((len(data),), velocities.dtype)
+            med_velocities[1:] = (
+                np.diff(median_filter(data['x'],
+                                      size=median_filter_length)) ** 2 +
+                np.diff(median_filter(data['y'],
+                                      size=median_filter_length)) ** 2) ** 0.5
+            # convert from px/sample to deg/s
+            med_velocities *= self.px2deg * self.sr
+            # remove any velocity bordering NaN
+            med_velocities[get_dilated_nan_mask(
+                med_velocities, dilate_nan, 0)] = np.nan
+
+        # replace "too fast" velocities with previous velocity
+        # add missing first datapoint
+        filtered_velocities = [float(0)]
+        for vel in velocities:
+            if vel > max_vel:  # deg/s
+                # ignore very fast velocities
+                lgr.warning(
+                    'Computed velocity exceeds threshold. '
+                    'Inappropriate filter setup? [%.1f > %.1f deg/s]',
+                    vel,
+                    max_vel)
+                vel = filtered_velocities[-1]
+            filtered_velocities.append(vel)
+        velocities = np.array(filtered_velocities)
+        if not median_filter_length:
+            # no median filtering, but we need the field in our dict later,
+            # so we just reuse the original velocities
+            med_velocities = velocities
+        # acceleration is change of velocities over the last time unit
+        acceleration = np.zeros(velocities.shape, velocities.dtype)
+        acceleration[1:] = (velocities[1:] - velocities[:-1]) * self.sr
+
+        arrs = [med_velocities]
+        names = ['med_vel']
+        arrs.extend([
+            velocities,
+            acceleration,
+            data['x'],
+            data['y']])
+        names.extend(['vel', 'accel', 'x', 'y'])
+        return np.core.records.fromarrays(arrs, names=names)
 
     def show_gaze(self, data=None, pp=None, events=None, show_vels=True):
         colors = {
